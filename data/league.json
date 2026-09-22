@@ -1,0 +1,1303 @@
+{
+  "settings": {
+    "name": "Good Guys Bowling League",
+    "tagline": "Same league, different breed",
+    "season": "2026 Season",
+    "logo": "/brand/logo.png",
+    "currentWeek": 3,
+    "description": "Monday night bowling. Seven teams, four bowlers each, three games a night, one bye per team across the seven-week regular season. Top six make the playoffs.",
+    "rules": "Three games every Monday night. Each game counts as its own win or loss in the standings.\nEach team sits one week out on a bye. Bye weeks do not count as wins or losses.\nEvery pair of teams meets three times over the regular season.\nTeam score for a game is the sum of its four bowlers' scores.\nA bowler missing a night scores zero unless a substitute is approved by the commissioner.\nTop six teams by points make the playoffs. Seeds 1 and 2 get a bye into the semifinals.\nTies in the standings are broken by total pins.",
+    "pointsPerWin": 2,
+    "pointsPerTie": 1,
+    "gamesPerNight": 3,
+    "playersPerTeam": 4,
+    "playerStatFields": [
+      {
+        "key": "spares",
+        "label": "Spares",
+        "lowerIsBetter": false,
+        "showOnStatsPage": true
+      },
+      {
+        "key": "openFrames",
+        "label": "Open Frames",
+        "lowerIsBetter": true,
+        "showOnStatsPage": false
+      }
+    ]
+  },
+  "teams": [
+    {
+      "id": "two-fingers-one-thumb",
+      "name": "2 Fingers 1 Thumb",
+      "abbreviation": "2F1T",
+      "color": "#8b5cf6",
+      "sortOrder": 0,
+      "logo": null,
+      "manualRecord": {
+        "wins": 5,
+        "losses": 1,
+        "ties": 0,
+        "totalPins": 3037
+      },
+      "powerRanking": 2,
+      "powerScore": null,
+      "powerMovement": -1,
+      "powerRankingDescription": ""
+    },
+    {
+      "id": "back-alley-bowljobs",
+      "name": "Back Alley BowlJobs",
+      "abbreviation": "BAB",
+      "color": "#6d28d9",
+      "sortOrder": 1,
+      "logo": null,
+      "manualRecord": {
+        "wins": 6,
+        "losses": 0,
+        "ties": 0,
+        "totalPins": 2930
+      },
+      "powerRanking": 1,
+      "powerScore": null,
+      "powerMovement": 1,
+      "powerRankingDescription": ""
+    },
+    {
+      "id": "southside-slaw-bunnies",
+      "name": "Southside Slaw Bunnies",
+      "abbreviation": "SSB",
+      "color": "#db2777",
+      "sortOrder": 2,
+      "logo": null,
+      "manualRecord": {
+        "wins": 3,
+        "losses": 3,
+        "ties": 0,
+        "totalPins": 2782
+      },
+      "powerRanking": 4,
+      "powerScore": null,
+      "powerMovement": -1,
+      "powerRankingDescription": ""
+    },
+    {
+      "id": "osama-pin-laden",
+      "name": "Osama Pin Laden",
+      "abbreviation": "OPL",
+      "color": "#b91c1c",
+      "sortOrder": 3,
+      "logo": null,
+      "manualRecord": {
+        "wins": 0,
+        "losses": 6,
+        "ties": 0,
+        "totalPins": 2699
+      },
+      "powerRanking": 6,
+      "powerScore": null,
+      "powerMovement": -2,
+      "powerRankingDescription": ""
+    },
+    {
+      "id": "pocket-pounders",
+      "name": "Pocket Pounders",
+      "abbreviation": "PP",
+      "color": "#71717a",
+      "sortOrder": 4,
+      "logo": null,
+      "manualRecord": {
+        "wins": 2,
+        "losses": 1,
+        "ties": 0,
+        "totalPins": 1434
+      },
+      "powerRanking": 3,
+      "powerScore": null,
+      "powerMovement": 2,
+      "powerRankingDescription": ""
+    },
+    {
+      "id": "goop-troop",
+      "name": "Goop Troop",
+      "abbreviation": "GT",
+      "color": "#22c55e",
+      "sortOrder": 5,
+      "logo": null,
+      "manualRecord": {
+        "wins": 2,
+        "losses": 4,
+        "ties": 0,
+        "totalPins": 2662
+      },
+      "powerRanking": 5,
+      "powerScore": null,
+      "powerMovement": 1,
+      "powerRankingDescription": ""
+    },
+    {
+      "id": "sunday-guys",
+      "name": "Sunday Guys",
+      "abbreviation": "SG",
+      "color": "#2563eb",
+      "sortOrder": 6,
+      "logo": null,
+      "manualRecord": {
+        "wins": 0,
+        "losses": 3,
+        "ties": 0,
+        "totalPins": 1206
+      },
+      "powerRanking": 7,
+      "powerScore": null,
+      "powerMovement": 0,
+      "powerRankingDescription": ""
+    }
+  ],
+  "players": [
+    {
+      "id": "drew-taylor",
+      "name": "Drew Taylor",
+      "photo": null,
+      "teamId": "two-fingers-one-thumb",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 6,
+        "average": null,
+        "totalScore": 823,
+        "strikes": 4
+      },
+      "active": true
+    },
+    {
+      "id": "chase-nolde",
+      "name": "Chase Nolde",
+      "photo": null,
+      "teamId": "two-fingers-one-thumb",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 6,
+        "average": null,
+        "totalScore": 764,
+        "strikes": 10
+      },
+      "active": true
+    },
+    {
+      "id": "jack-petsche",
+      "name": "Jack Petsche",
+      "photo": null,
+      "teamId": "two-fingers-one-thumb",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 6,
+        "average": null,
+        "totalScore": 734,
+        "strikes": 8
+      },
+      "active": true
+    },
+    {
+      "id": "nikola-m",
+      "name": "Nikola M",
+      "photo": null,
+      "teamId": "two-fingers-one-thumb",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 6,
+        "average": null,
+        "totalScore": 716,
+        "strikes": 6
+      },
+      "active": true
+    },
+    {
+      "id": "charlie-dixon",
+      "name": "Charlie Dixon",
+      "photo": null,
+      "teamId": "back-alley-bowljobs",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 6,
+        "average": null,
+        "totalScore": 857,
+        "strikes": 15
+      },
+      "active": true
+    },
+    {
+      "id": "adam-bennett",
+      "name": "Adam Bennett",
+      "photo": null,
+      "teamId": "back-alley-bowljobs",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 6,
+        "average": null,
+        "totalScore": 727,
+        "strikes": 10
+      },
+      "active": true
+    },
+    {
+      "id": "connor-eng",
+      "name": "Connor Eng",
+      "photo": null,
+      "teamId": "back-alley-bowljobs",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 6,
+        "average": null,
+        "totalScore": 719,
+        "strikes": 10
+      },
+      "active": true
+    },
+    {
+      "id": "avery-pascoe",
+      "name": "Avery Pascoe",
+      "photo": null,
+      "teamId": "back-alley-bowljobs",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 6,
+        "average": null,
+        "totalScore": 627,
+        "strikes": 5
+      },
+      "active": true
+    },
+    {
+      "id": "anthony-brohl",
+      "name": "Anthony Brohl",
+      "photo": null,
+      "teamId": "southside-slaw-bunnies",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 6,
+        "average": null,
+        "totalScore": 830,
+        "strikes": 11
+      },
+      "active": true
+    },
+    {
+      "id": "hunter-lilla",
+      "name": "Hunter Lilla",
+      "photo": null,
+      "teamId": "southside-slaw-bunnies",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 6,
+        "average": null,
+        "totalScore": 809,
+        "strikes": 13
+      },
+      "active": true
+    },
+    {
+      "id": "aidan-poggi",
+      "name": "Aidan Poggi",
+      "photo": null,
+      "teamId": "southside-slaw-bunnies",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 6,
+        "average": null,
+        "totalScore": 622,
+        "strikes": 4
+      },
+      "active": true
+    },
+    {
+      "id": "harry-ducu",
+      "name": "Harry Ducu",
+      "photo": null,
+      "teamId": "southside-slaw-bunnies",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 6,
+        "average": null,
+        "totalScore": 521,
+        "strikes": 6
+      },
+      "active": true
+    },
+    {
+      "id": "nick-brown",
+      "name": "Nick Brown",
+      "photo": null,
+      "teamId": "osama-pin-laden",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 6,
+        "average": null,
+        "totalScore": 770,
+        "strikes": 11
+      },
+      "active": true
+    },
+    {
+      "id": "ebt",
+      "name": "EBT",
+      "photo": null,
+      "teamId": "osama-pin-laden",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 6,
+        "average": null,
+        "totalScore": 653,
+        "strikes": 8
+      },
+      "active": true
+    },
+    {
+      "id": "devin-reome",
+      "name": "Devin Reome",
+      "photo": null,
+      "teamId": "osama-pin-laden",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 6,
+        "average": null,
+        "totalScore": 645,
+        "strikes": 10
+      },
+      "active": true
+    },
+    {
+      "id": "slutty-j",
+      "name": "Slutty J",
+      "photo": null,
+      "teamId": "osama-pin-laden",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 6,
+        "average": null,
+        "totalScore": 631,
+        "strikes": 11
+      },
+      "active": true
+    },
+    {
+      "id": "zach-cabby",
+      "name": "Zach Cabby",
+      "photo": null,
+      "teamId": "goop-troop",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 6,
+        "average": null,
+        "totalScore": 690,
+        "strikes": 11
+      },
+      "active": true
+    },
+    {
+      "id": "grayson-jones",
+      "name": "Grayson Jones",
+      "photo": null,
+      "teamId": "goop-troop",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 6,
+        "average": null,
+        "totalScore": 688,
+        "strikes": 6
+      },
+      "active": true
+    },
+    {
+      "id": "luke-nelson",
+      "name": "Luke Nelson",
+      "photo": null,
+      "teamId": "goop-troop",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 6,
+        "average": null,
+        "totalScore": 650,
+        "strikes": 10
+      },
+      "active": true
+    },
+    {
+      "id": "charlie-fracker",
+      "name": "Charlie Fracker",
+      "photo": null,
+      "teamId": "goop-troop",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 6,
+        "average": null,
+        "totalScore": 634,
+        "strikes": 8
+      },
+      "active": true
+    },
+    {
+      "id": "brock-rodgers",
+      "name": "Brock Rodgers",
+      "photo": null,
+      "teamId": "pocket-pounders",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 3,
+        "average": null,
+        "totalScore": 393,
+        "strikes": 9
+      },
+      "active": true
+    },
+    {
+      "id": "brody-burns",
+      "name": "Brody Burns",
+      "photo": null,
+      "teamId": "pocket-pounders",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 3,
+        "average": null,
+        "totalScore": 381,
+        "strikes": 6
+      },
+      "active": true
+    },
+    {
+      "id": "kyle-mo",
+      "name": "Kyle Mo",
+      "photo": null,
+      "teamId": "pocket-pounders",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 3,
+        "average": null,
+        "totalScore": 316,
+        "strikes": 3
+      },
+      "active": true
+    },
+    {
+      "id": "caden-ophoff",
+      "name": "Caden Ophoff",
+      "photo": null,
+      "teamId": "pocket-pounders",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 3,
+        "average": null,
+        "totalScore": 314,
+        "strikes": 4
+      },
+      "active": true
+    },
+    {
+      "id": "jack-hulgrave",
+      "name": "Jack Hulgrave",
+      "photo": null,
+      "teamId": "sunday-guys",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 3,
+        "average": null,
+        "totalScore": 367,
+        "strikes": 3
+      },
+      "active": true
+    },
+    {
+      "id": "dylan-pham",
+      "name": "Dylan Pham",
+      "photo": null,
+      "teamId": "sunday-guys",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 3,
+        "average": null,
+        "totalScore": 347,
+        "strikes": 3
+      },
+      "active": true
+    },
+    {
+      "id": "carson-cebul",
+      "name": "Carson Cebul",
+      "photo": null,
+      "teamId": "sunday-guys",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 3,
+        "average": null,
+        "totalScore": 262,
+        "strikes": 1
+      },
+      "active": true
+    },
+    {
+      "id": "matthew-kurc",
+      "name": "Matthew Kurc",
+      "photo": null,
+      "teamId": "sunday-guys",
+      "nickname": null,
+      "additionalStats": {
+        "spares": null,
+        "openFrames": null
+      },
+      "manualStats": {
+        "games": 3,
+        "average": null,
+        "totalScore": 230,
+        "strikes": 1
+      },
+      "active": true
+    }
+  ],
+  "weeks": [
+    {
+      "id": "week-1",
+      "weekNumber": 1,
+      "date": "2026-09-14",
+      "byeTeamId": "pocket-pounders",
+      "completed": true,
+      "notes": "",
+      "matchups": [
+        {
+          "id": "w1g1m1",
+          "game": 1,
+          "team1Id": "two-fingers-one-thumb",
+          "team2Id": "osama-pin-laden",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w1g1m2",
+          "game": 1,
+          "team1Id": "goop-troop",
+          "team2Id": "sunday-guys",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w1g1m3",
+          "game": 1,
+          "team1Id": "southside-slaw-bunnies",
+          "team2Id": "back-alley-bowljobs",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w1g2m1",
+          "game": 2,
+          "team1Id": "two-fingers-one-thumb",
+          "team2Id": "goop-troop",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w1g2m2",
+          "game": 2,
+          "team1Id": "southside-slaw-bunnies",
+          "team2Id": "sunday-guys",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w1g2m3",
+          "game": 2,
+          "team1Id": "osama-pin-laden",
+          "team2Id": "back-alley-bowljobs",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w1g3m1",
+          "game": 3,
+          "team1Id": "two-fingers-one-thumb",
+          "team2Id": "sunday-guys",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w1g3m2",
+          "game": 3,
+          "team1Id": "goop-troop",
+          "team2Id": "back-alley-bowljobs",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w1g3m3",
+          "game": 3,
+          "team1Id": "osama-pin-laden",
+          "team2Id": "southside-slaw-bunnies",
+          "team1Score": null,
+          "team2Score": null
+        }
+      ],
+      "playerScores": []
+    },
+    {
+      "id": "week-2",
+      "weekNumber": 2,
+      "date": "2026-09-21",
+      "byeTeamId": "sunday-guys",
+      "completed": true,
+      "notes": "",
+      "matchups": [
+        {
+          "id": "w2g1m1",
+          "game": 1,
+          "team1Id": "two-fingers-one-thumb",
+          "team2Id": "southside-slaw-bunnies",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w2g1m2",
+          "game": 1,
+          "team1Id": "osama-pin-laden",
+          "team2Id": "back-alley-bowljobs",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w2g1m3",
+          "game": 1,
+          "team1Id": "goop-troop",
+          "team2Id": "pocket-pounders",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w2g2m1",
+          "game": 2,
+          "team1Id": "two-fingers-one-thumb",
+          "team2Id": "goop-troop",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w2g2m2",
+          "game": 2,
+          "team1Id": "pocket-pounders",
+          "team2Id": "back-alley-bowljobs",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w2g2m3",
+          "game": 2,
+          "team1Id": "osama-pin-laden",
+          "team2Id": "southside-slaw-bunnies",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w2g3m1",
+          "game": 3,
+          "team1Id": "pocket-pounders",
+          "team2Id": "osama-pin-laden",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w2g3m2",
+          "game": 3,
+          "team1Id": "two-fingers-one-thumb",
+          "team2Id": "back-alley-bowljobs",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w2g3m3",
+          "game": 3,
+          "team1Id": "southside-slaw-bunnies",
+          "team2Id": "goop-troop",
+          "team1Score": null,
+          "team2Score": null
+        }
+      ],
+      "playerScores": []
+    },
+    {
+      "id": "week-3",
+      "weekNumber": 3,
+      "date": "2026-09-28",
+      "byeTeamId": "southside-slaw-bunnies",
+      "completed": false,
+      "notes": "",
+      "matchups": [
+        {
+          "id": "w3g1m1",
+          "game": 1,
+          "team1Id": "two-fingers-one-thumb",
+          "team2Id": "goop-troop",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w3g1m2",
+          "game": 1,
+          "team1Id": "back-alley-bowljobs",
+          "team2Id": "pocket-pounders",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w3g1m3",
+          "game": 1,
+          "team1Id": "osama-pin-laden",
+          "team2Id": "sunday-guys",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w3g2m1",
+          "game": 2,
+          "team1Id": "goop-troop",
+          "team2Id": "osama-pin-laden",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w3g2m2",
+          "game": 2,
+          "team1Id": "two-fingers-one-thumb",
+          "team2Id": "back-alley-bowljobs",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w3g2m3",
+          "game": 2,
+          "team1Id": "pocket-pounders",
+          "team2Id": "sunday-guys",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w3g3m1",
+          "game": 3,
+          "team1Id": "pocket-pounders",
+          "team2Id": "goop-troop",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w3g3m2",
+          "game": 3,
+          "team1Id": "osama-pin-laden",
+          "team2Id": "two-fingers-one-thumb",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w3g3m3",
+          "game": 3,
+          "team1Id": "sunday-guys",
+          "team2Id": "back-alley-bowljobs",
+          "team1Score": null,
+          "team2Score": null
+        }
+      ],
+      "playerScores": []
+    },
+    {
+      "id": "week-4",
+      "weekNumber": 4,
+      "date": "2026-10-05",
+      "byeTeamId": "osama-pin-laden",
+      "completed": false,
+      "notes": "",
+      "matchups": [
+        {
+          "id": "w4g1m1",
+          "game": 1,
+          "team1Id": "two-fingers-one-thumb",
+          "team2Id": "sunday-guys",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w4g1m2",
+          "game": 1,
+          "team1Id": "goop-troop",
+          "team2Id": "pocket-pounders",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w4g1m3",
+          "game": 1,
+          "team1Id": "back-alley-bowljobs",
+          "team2Id": "southside-slaw-bunnies",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w4g2m1",
+          "game": 2,
+          "team1Id": "sunday-guys",
+          "team2Id": "pocket-pounders",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w4g2m2",
+          "game": 2,
+          "team1Id": "goop-troop",
+          "team2Id": "back-alley-bowljobs",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w4g2m3",
+          "game": 2,
+          "team1Id": "two-fingers-one-thumb",
+          "team2Id": "southside-slaw-bunnies",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w4g3m1",
+          "game": 3,
+          "team1Id": "two-fingers-one-thumb",
+          "team2Id": "back-alley-bowljobs",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w4g3m2",
+          "game": 3,
+          "team1Id": "southside-slaw-bunnies",
+          "team2Id": "pocket-pounders",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w4g3m3",
+          "game": 3,
+          "team1Id": "sunday-guys",
+          "team2Id": "goop-troop",
+          "team1Score": null,
+          "team2Score": null
+        }
+      ],
+      "playerScores": []
+    },
+    {
+      "id": "week-5",
+      "weekNumber": 5,
+      "date": "2026-10-12",
+      "byeTeamId": "back-alley-bowljobs",
+      "completed": false,
+      "notes": "",
+      "matchups": [
+        {
+          "id": "w5g1m1",
+          "game": 1,
+          "team1Id": "two-fingers-one-thumb",
+          "team2Id": "pocket-pounders",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w5g1m2",
+          "game": 1,
+          "team1Id": "goop-troop",
+          "team2Id": "osama-pin-laden",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w5g1m3",
+          "game": 1,
+          "team1Id": "southside-slaw-bunnies",
+          "team2Id": "sunday-guys",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w5g2m1",
+          "game": 2,
+          "team1Id": "goop-troop",
+          "team2Id": "southside-slaw-bunnies",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w5g2m2",
+          "game": 2,
+          "team1Id": "two-fingers-one-thumb",
+          "team2Id": "pocket-pounders",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w5g2m3",
+          "game": 2,
+          "team1Id": "osama-pin-laden",
+          "team2Id": "sunday-guys",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w5g3m1",
+          "game": 3,
+          "team1Id": "osama-pin-laden",
+          "team2Id": "goop-troop",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w5g3m2",
+          "game": 3,
+          "team1Id": "southside-slaw-bunnies",
+          "team2Id": "two-fingers-one-thumb",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w5g3m3",
+          "game": 3,
+          "team1Id": "sunday-guys",
+          "team2Id": "pocket-pounders",
+          "team1Score": null,
+          "team2Score": null
+        }
+      ],
+      "playerScores": []
+    },
+    {
+      "id": "week-6",
+      "weekNumber": 6,
+      "date": "2026-10-19",
+      "byeTeamId": "goop-troop",
+      "completed": false,
+      "notes": "",
+      "matchups": [
+        {
+          "id": "w6g1m1",
+          "game": 1,
+          "team1Id": "two-fingers-one-thumb",
+          "team2Id": "pocket-pounders",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w6g1m2",
+          "game": 1,
+          "team1Id": "back-alley-bowljobs",
+          "team2Id": "osama-pin-laden",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w6g1m3",
+          "game": 1,
+          "team1Id": "sunday-guys",
+          "team2Id": "southside-slaw-bunnies",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w6g2m1",
+          "game": 2,
+          "team1Id": "pocket-pounders",
+          "team2Id": "southside-slaw-bunnies",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w6g2m2",
+          "game": 2,
+          "team1Id": "sunday-guys",
+          "team2Id": "back-alley-bowljobs",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w6g2m3",
+          "game": 2,
+          "team1Id": "osama-pin-laden",
+          "team2Id": "two-fingers-one-thumb",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w6g3m1",
+          "game": 3,
+          "team1Id": "two-fingers-one-thumb",
+          "team2Id": "sunday-guys",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w6g3m2",
+          "game": 3,
+          "team1Id": "southside-slaw-bunnies",
+          "team2Id": "back-alley-bowljobs",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w6g3m3",
+          "game": 3,
+          "team1Id": "pocket-pounders",
+          "team2Id": "osama-pin-laden",
+          "team1Score": null,
+          "team2Score": null
+        }
+      ],
+      "playerScores": []
+    },
+    {
+      "id": "week-7",
+      "weekNumber": 7,
+      "date": "2026-10-26",
+      "byeTeamId": "two-fingers-one-thumb",
+      "completed": false,
+      "notes": "",
+      "matchups": [
+        {
+          "id": "w7g1m1",
+          "game": 1,
+          "team1Id": "osama-pin-laden",
+          "team2Id": "pocket-pounders",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w7g1m2",
+          "game": 1,
+          "team1Id": "back-alley-bowljobs",
+          "team2Id": "sunday-guys",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w7g1m3",
+          "game": 1,
+          "team1Id": "goop-troop",
+          "team2Id": "southside-slaw-bunnies",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w7g2m1",
+          "game": 2,
+          "team1Id": "goop-troop",
+          "team2Id": "sunday-guys",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w7g2m2",
+          "game": 2,
+          "team1Id": "pocket-pounders",
+          "team2Id": "back-alley-bowljobs",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w7g2m3",
+          "game": 2,
+          "team1Id": "osama-pin-laden",
+          "team2Id": "southside-slaw-bunnies",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w7g3m1",
+          "game": 3,
+          "team1Id": "osama-pin-laden",
+          "team2Id": "sunday-guys",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w7g3m2",
+          "game": 3,
+          "team1Id": "southside-slaw-bunnies",
+          "team2Id": "pocket-pounders",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w7g3m3",
+          "game": 3,
+          "team1Id": "goop-troop",
+          "team2Id": "back-alley-bowljobs",
+          "team1Score": null,
+          "team2Score": null
+        }
+      ],
+      "playerScores": []
+    }
+  ],
+  "playoffs": {
+    "enabled": true,
+    "qualifiers": 6,
+    "series": [
+      {
+        "id": "pi-1",
+        "round": "playin",
+        "label": "4 vs 5",
+        "slot1": "seed:4",
+        "slot2": "seed:5",
+        "team1Score": null,
+        "team2Score": null,
+        "winnerId": null
+      },
+      {
+        "id": "pi-2",
+        "round": "playin",
+        "label": "3 vs 6",
+        "slot1": "seed:3",
+        "slot2": "seed:6",
+        "team1Score": null,
+        "team2Score": null,
+        "winnerId": null
+      },
+      {
+        "id": "sf-1",
+        "round": "semifinal",
+        "label": "1 vs (4/5)",
+        "slot1": "seed:1",
+        "slot2": "series:pi-1",
+        "team1Score": null,
+        "team2Score": null,
+        "winnerId": null
+      },
+      {
+        "id": "sf-2",
+        "round": "semifinal",
+        "label": "2 vs (3/6)",
+        "slot1": "seed:2",
+        "slot2": "series:pi-2",
+        "team1Score": null,
+        "team2Score": null,
+        "winnerId": null
+      },
+      {
+        "id": "final",
+        "round": "final",
+        "label": "Championship",
+        "slot1": "series:sf-1",
+        "slot2": "series:sf-2",
+        "team1Score": null,
+        "team2Score": null,
+        "winnerId": null
+      }
+    ],
+    "championId": null
+  }
+}

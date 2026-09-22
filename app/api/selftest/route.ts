@@ -237,7 +237,7 @@ export async function GET() {
   // a diagnostic must never be able to damage the league's own data.
   const teamSnapshot = structuredClone(league.teams[0].manualRecord);
   await mutateLeague((l) => {
-    l.teams[0].manualRecord = { wins: 12, losses: 3, ties: 0, totalPins: 9999 };
+    l.teams[0].manualRecord = { throughWeek: null, wins: 12, losses: 3, ties: 0, totalPins: 9999 };
   });
   const overridden = computeStandings(await readLeague()).find(
     (s) => s.team.id === league.teams[0].id,
@@ -253,7 +253,13 @@ export async function GET() {
 
   const playerSnapshot = structuredClone(league.players[0].manualStats);
   await mutateLeague((l) => {
-    l.players[0].manualStats = { games: 6, average: 200, totalScore: 1200, strikes: 40 };
+    l.players[0].manualStats = {
+      throughWeek: null,
+      games: 6,
+      average: 200,
+      totalScore: 1200,
+      strikes: 40,
+    };
   });
   const pOver = computePlayerStats(await readLeague()).find(
     (s) => s.player.id === league.players[0].id,

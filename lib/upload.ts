@@ -1,10 +1,7 @@
-import { promises as fs } from "node:fs";
 import { randomBytes } from "node:crypto";
-import path from "node:path";
+import { storage } from "./storage";
 
-const UPLOAD_ROOT = path.join(process.cwd(), "public", "uploads");
-
-/** Only image types the browser can render, mapped to a safe extension. */
+/** Only image types a browser can render, mapped to a safe extension. */
 const ALLOWED: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
@@ -19,9 +16,9 @@ const MAX_BYTES = 6 * 1024 * 1024;
 export class UploadError extends Error {}
 
 /**
- * Saves an uploaded image under public/uploads/<folder>/ and returns its public
- * path. The filename is generated, never taken from the upload, so a crafted
- * name can't escape the uploads directory.
+ * Stores an uploaded image and returns the URL to render it from. The filename
+ * is generated, never taken from the upload, so a crafted name can't escape the
+ * uploads directory.
  */
 export async function saveImage(
   file: File | null,
@@ -41,23 +38,13 @@ export async function saveImage(
     );
   }
 
-  const dir = path.join(UPLOAD_ROOT, folder);
-  await fs.mkdir(dir, { recursive: true });
-
   const name = `${Date.now().toString(36)}-${randomBytes(4).toString("hex")}.${ext}`;
-  await fs.writeFile(path.join(dir, name), Buffer.from(await file.arrayBuffer()));
-  return `/uploads/${folder}/${name}`;
+  const bytes = Buffer.from(await file.arrayBuffer());
+  return storage().putImage(folder, name, bytes, file.type);
 }
 
-/** Best-effort cleanup of a previously uploaded file. Never throws. */
-export async function deleteUpload(publicPath: string | null): Promise<void> {
-  if (!publicPath || !publicPath.startsWith("/uploads/")) return;
-  const abs = path.join(process.cwd(), "public", publicPath.replace(/^\//, ""));
-  // Guard against a stored path that tries to climb out of the uploads folder.
-  if (!abs.startsWith(UPLOAD_ROOT)) return;
-  try {
-    await fs.unlink(abs);
-  } catch {
-    // Already gone, or never written. Nothing to do.
-  }
+/** Best-effort cleanup of a previously uploaded image. Never throws. */
+export async function deleteUpload(ref: string | null): Promise<void> {
+  if (!ref) return;
+  await storage().deleteImage(ref);
 }

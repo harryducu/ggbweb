@@ -1,46 +1,38 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import { buildSeedLeague } from "./seed";
+import { storage } from "./storage";
 import type { League } from "./types";
 
 /**
- * Where the league file lives. Override with LEAGUE_DATA_DIR to point at a
- * mounted volume in production, or at a throwaway directory for testing.
- */
-const DATA_DIR = process.env.LEAGUE_DATA_DIR
-  ? path.resolve(process.env.LEAGUE_DATA_DIR)
-  : path.join(process.cwd(), "data");
-const DATA_FILE = path.join(DATA_DIR, "league.json");
-
-/**
  * Serializes writes so two commissioner saves landing at the same moment can't
- * interleave and lose each other. One process, one chain — enough for a league
- * with a single admin.
+ * interleave and lose each other. This is per-process, which is enough for a
+ * league with a single admin; it is not a distributed lock.
  */
 let writeChain: Promise<unknown> = Promise.resolve();
 
-async function ensureFile(): Promise<void> {
-  try {
-    await fs.access(DATA_FILE);
-  } catch {
-    await fs.mkdir(DATA_DIR, { recursive: true });
-    await fs.writeFile(DATA_FILE, JSON.stringify(buildSeedLeague(), null, 2), "utf8");
-  }
-}
+/**
+ * Guards the very first read. Without this, several requests arriving before
+ * anything is stored would each decide the league is missing and each write
+ * their own seed, racing one another.
+ */
+let seeding: Promise<League> | null = null;
 
 export async function readLeague(): Promise<League> {
-  await ensureFile();
-  const raw = await fs.readFile(DATA_FILE, "utf8");
-  return JSON.parse(raw) as League;
-}
+  const raw = await storage().readDoc();
+  if (raw) return JSON.parse(raw) as League;
 
-async function writeLeague(league: League): Promise<void> {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-  // Write to a temp file then rename, so a crash mid-write can't truncate the
-  // league's only copy of its season.
-  const tmp = `${DATA_FILE}.${process.pid}.tmp`;
-  await fs.writeFile(tmp, JSON.stringify(league, null, 2), "utf8");
-  await fs.rename(tmp, DATA_FILE);
+  if (!seeding) {
+    seeding = (async () => {
+      // Re-check inside the guard: another caller may have seeded already.
+      const existing = await storage().readDoc();
+      if (existing) return JSON.parse(existing) as League;
+      const seed = buildSeedLeague();
+      await storage().writeDoc(JSON.stringify(seed, null, 2));
+      return seed;
+    })().finally(() => {
+      seeding = null;
+    });
+  }
+  return seeding;
 }
 
 /** Read, transform, and persist the league in one serialized operation. */
@@ -48,7 +40,7 @@ export function mutateLeague<T>(fn: (league: League) => T | Promise<T>): Promise
   const run = async (): Promise<T> => {
     const league = await readLeague();
     const result = await fn(league);
-    await writeLeague(league);
+    await storage().writeDoc(JSON.stringify(league, null, 2));
     return result;
   };
   const next = writeChain.then(run, run);

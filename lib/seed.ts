@@ -299,6 +299,13 @@ const RECORD_SEED: Record<string, { wins: number; losses: number; totalPins: num
  */
 const WEEK1_POWER_ORDER: string[] = [T.TF, T.BA, T.SS, T.OP, T.PP, T.GT, T.SG];
 
+/**
+ * The workbook's totals run through this week. Scores entered for any later
+ * week are added on top, so the season keeps accumulating from here instead of
+ * being frozen at the spreadsheet's numbers.
+ */
+const TOTALS_THROUGH_WEEK = 2;
+
 /** Monday nights, starting the first Monday of the season. */
 function mondayDates(count: number, firstMonday: string): string[] {
   const out: string[] = [];
@@ -340,6 +347,7 @@ export function buildSeedLeague(): League {
       ...t,
       logo: null,
       manualRecord: {
+        throughWeek: TOTALS_THROUGH_WEEK,
         wins: record.wins,
         losses: record.losses,
         ties: 0,
@@ -367,6 +375,7 @@ export function buildSeedLeague(): League {
       additionalStats: { spares: null, openFrames: null },
       // Season totals come from the workbook; average is derived from them.
       manualStats: {
+        throughWeek: TOTALS_THROUGH_WEEK,
         games: p.games,
         average: null,
         totalScore: p.totalScore,

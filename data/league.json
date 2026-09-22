@@ -35,6 +35,7 @@
       "sortOrder": 0,
       "logo": null,
       "manualRecord": {
+        "throughWeek": 2,
         "wins": 5,
         "losses": 1,
         "ties": 0,
@@ -53,6 +54,7 @@
       "sortOrder": 1,
       "logo": null,
       "manualRecord": {
+        "throughWeek": 2,
         "wins": 6,
         "losses": 0,
         "ties": 0,
@@ -71,6 +73,7 @@
       "sortOrder": 2,
       "logo": null,
       "manualRecord": {
+        "throughWeek": 2,
         "wins": 3,
         "losses": 3,
         "ties": 0,
@@ -89,6 +92,7 @@
       "sortOrder": 3,
       "logo": null,
       "manualRecord": {
+        "throughWeek": 2,
         "wins": 0,
         "losses": 6,
         "ties": 0,
@@ -107,6 +111,7 @@
       "sortOrder": 4,
       "logo": null,
       "manualRecord": {
+        "throughWeek": 2,
         "wins": 2,
         "losses": 1,
         "ties": 0,
@@ -125,6 +130,7 @@
       "sortOrder": 5,
       "logo": null,
       "manualRecord": {
+        "throughWeek": 2,
         "wins": 2,
         "losses": 4,
         "ties": 0,
@@ -143,6 +149,7 @@
       "sortOrder": 6,
       "logo": null,
       "manualRecord": {
+        "throughWeek": 2,
         "wins": 0,
         "losses": 3,
         "ties": 0,
@@ -166,6 +173,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 6,
         "average": null,
         "totalScore": 823,
@@ -184,6 +192,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 6,
         "average": null,
         "totalScore": 764,
@@ -202,6 +211,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 6,
         "average": null,
         "totalScore": 734,
@@ -220,6 +230,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 6,
         "average": null,
         "totalScore": 716,
@@ -238,6 +249,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 6,
         "average": null,
         "totalScore": 857,
@@ -256,6 +268,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 6,
         "average": null,
         "totalScore": 727,
@@ -274,6 +287,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 6,
         "average": null,
         "totalScore": 719,
@@ -292,6 +306,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 6,
         "average": null,
         "totalScore": 627,
@@ -310,6 +325,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 6,
         "average": null,
         "totalScore": 830,
@@ -328,6 +344,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 6,
         "average": null,
         "totalScore": 809,
@@ -346,6 +363,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 6,
         "average": null,
         "totalScore": 622,
@@ -364,6 +382,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 6,
         "average": null,
         "totalScore": 521,
@@ -382,6 +401,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 6,
         "average": null,
         "totalScore": 770,
@@ -400,6 +420,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 6,
         "average": null,
         "totalScore": 653,
@@ -418,6 +439,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 6,
         "average": null,
         "totalScore": 645,
@@ -436,6 +458,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 6,
         "average": null,
         "totalScore": 631,
@@ -454,6 +477,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 6,
         "average": null,
         "totalScore": 690,
@@ -472,6 +496,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 6,
         "average": null,
         "totalScore": 688,
@@ -490,6 +515,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 6,
         "average": null,
         "totalScore": 650,
@@ -508,6 +534,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 6,
         "average": null,
         "totalScore": 634,
@@ -526,6 +553,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 3,
         "average": null,
         "totalScore": 393,
@@ -544,6 +572,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 3,
         "average": null,
         "totalScore": 381,
@@ -562,6 +591,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 3,
         "average": null,
         "totalScore": 316,
@@ -580,6 +610,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 3,
         "average": null,
         "totalScore": 314,
@@ -598,6 +629,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 3,
         "average": null,
         "totalScore": 367,
@@ -616,6 +648,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 3,
         "average": null,
         "totalScore": 347,
@@ -634,6 +667,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 3,
         "average": null,
         "totalScore": 262,
@@ -652,6 +686,7 @@
         "openFrames": null
       },
       "manualStats": {
+        "throughWeek": 2,
         "games": 3,
         "average": null,
         "totalScore": 230,

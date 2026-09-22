@@ -72,6 +72,13 @@ export function ScoreEntry({
   const playing = teams.filter((t) => t.id !== byeTeamId);
   const byeTeam = teams.find((t) => t.id === byeTeamId);
 
+  // Scores on file for bowlers this form has no inputs for. They stay put on
+  // save, but the commissioner should know they exist.
+  const coveredIds = new Set(playing.flatMap((t) => t.players.map((p) => p.id)));
+  const orphaned = Object.keys(initialScores)
+    .map((key) => key.replace(/^s_/, "").replace(/_[123]$/, ""))
+    .filter((id, i, all) => all.indexOf(id) === i && !coveredIds.has(id));
+
   /** Sum of a team's bowlers for one game — blank inputs simply don't count. */
   const teamTotal = (team: EntryTeam, game: number): number | null => {
     const vals = team.players
@@ -114,6 +121,13 @@ export function ScoreEntry({
     <div className="space-y-5">
       <ActionForm action={saveWeekScoresAction}>
         <input type="hidden" name="weekId" value={weekId} />
+        {/* Tells the action which bowlers this form is responsible for, so it
+            doesn't clear scores belonging to anyone it never showed. */}
+        <input
+          type="hidden"
+          name="coveredPlayerIds"
+          value={playing.flatMap((t) => t.players.map((p) => p.id)).join(",")}
+        />
 
         <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
           <div className="flex items-center gap-2">
@@ -132,6 +146,19 @@ export function ScoreEntry({
             Also enter strike counts
           </label>
         </div>
+
+        {orphaned.length > 0 ? (
+          <div className="panel border-gold/50 bg-gold/[0.07] px-3.5 py-2.5 mb-4">
+            <div className="overline text-gold">Scores outside this week&apos;s teams</div>
+            <p className="hint mt-1">
+              {orphaned.length === 1
+                ? "One bowler on the bye team, or with no team, has"
+                : `${orphaned.length} bowlers on the bye team, or with no team, have`}{" "}
+              week {weekNumber} scores on file. They are left alone &mdash; saving here will not
+              change them. Use &ldquo;Clear scores&rdquo; below if they shouldn&apos;t be there.
+            </p>
+          </div>
+        ) : null}
 
         {/* ------------------------------------------ per-team score grids */}
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">

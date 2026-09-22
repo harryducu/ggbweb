@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { assertCommissioner, checkPassword, createSession, destroySession } from "./auth";
 import { mutateLeague, readLeague, resetLeague } from "./store";
 import { computeStandings } from "./stats";
+import { storageIsEphemeral } from "./storage";
 import { UploadError, deleteUpload, saveImage } from "./upload";
 import type { GameNumber, League, Player, Team } from "./types";
 
@@ -82,6 +83,15 @@ async function guard(fn: () => Promise<string>): Promise<ActionResult> {
   } catch (error) {
     if (error instanceof UploadError) return { ok: false, message: error.message };
     const message = error instanceof Error ? error.message : "Something went wrong.";
+    // A read-only filesystem means this is deployed somewhere that can't store
+    // the league file. Say so, instead of surfacing a raw EROFS.
+    if (/EROFS|read-only file system|ENOENT.*data\/league\.json/i.test(message)) {
+      return {
+        ok: false,
+        message:
+          "Nothing was saved: this deployment has no writable storage. Create a Vercel Blob store and redeploy — see the banner at the top of this page.",
+      };
+    }
     return { ok: false, message };
   }
 }
@@ -125,7 +135,13 @@ export async function addPlayerAction(_prev: ActionResult, fd: FormData): Promis
         additionalStats: Object.fromEntries(
           league.settings.playerStatFields.map((f) => [f.key, null]),
         ),
-        manualStats: { games: null, average: null, totalScore: null, strikes: null },
+        manualStats: {
+          throughWeek: null,
+          games: null,
+          average: null,
+          totalScore: null,
+          strikes: null,
+        },
         active: true,
       };
       league.players.push(player);
@@ -210,7 +226,7 @@ export async function addTeamAction(_prev: ActionResult, fd: FormData): Promise<
         powerRankingDescription: "",
         powerMovement: 0,
         sortOrder: league.teams.length,
-        manualRecord: { wins: null, losses: null, ties: null, totalPins: null },
+        manualRecord: { throughWeek: null, wins: null, losses: null, ties: null, totalPins: null },
       };
       league.teams.push(team);
     });
@@ -241,6 +257,8 @@ export async function updateTeamAction(_prev: ActionResult, fd: FormData): Promi
       team.abbreviation = str(fd, "abbreviation") || abbrFrom(name);
       team.color = str(fd, "color") || team.color;
       team.manualRecord = {
+        // Keep the baseline week; only the posted numbers are editable here.
+        throughWeek: team.manualRecord?.throughWeek ?? null,
         wins: num(fd, "manualWins"),
         losses: num(fd, "manualLosses"),
         ties: num(fd, "manualTies"),
@@ -325,8 +343,24 @@ export async function saveWeekScoresAction(
       const week = league.weeks.find((w) => w.id === weekId);
       if (!week) throw new Error("That week no longer exists.");
 
-      week.playerScores = [];
+      // The form only renders inputs for bowlers on the teams playing that
+      // night, so it tells us which ones it covered. Anyone else — the bye
+      // team's bowlers, free agents — keeps whatever scores they already had,
+      // rather than being silently wiped by a save that never showed them.
+      const covered = new Set(
+        str(fd, "coveredPlayerIds")
+          .split(",")
+          .map((id) => id.trim())
+          .filter(Boolean),
+      );
+      const scoresThisForm = covered.size > 0;
+
+      week.playerScores = scoresThisForm
+        ? week.playerScores.filter((s) => !covered.has(s.playerId))
+        : [];
+
       for (const player of league.players) {
+        if (scoresThisForm && !covered.has(player.id)) continue;
         for (const game of [1, 2, 3] as GameNumber[]) {
           const score = num(fd, `s_${player.id}_${game}`);
           const strikes = num(fd, `x_${player.id}_${game}`);
@@ -393,13 +427,25 @@ export async function clearAllScoresAction(
         }
       }
       for (const player of league.players) {
-        player.manualStats = { games: null, average: null, totalScore: null, strikes: null };
+        player.manualStats = {
+          throughWeek: null,
+          games: null,
+          average: null,
+          totalScore: null,
+          strikes: null,
+        };
         player.additionalStats = Object.fromEntries(
           league.settings.playerStatFields.map((f) => [f.key, null]),
         );
       }
       for (const team of league.teams) {
-        team.manualRecord = { wins: null, losses: null, ties: null, totalPins: null };
+        team.manualRecord = {
+          throughWeek: null,
+          wins: null,
+          losses: null,
+          ties: null,
+          totalPins: null,
+        };
         team.powerScore = null;
         team.powerMovement = 0;
       }
@@ -585,6 +631,7 @@ export async function savePlayerStatsAction(
         const before = JSON.stringify([player.manualStats, player.additionalStats]);
 
         player.manualStats = {
+          throughWeek: player.manualStats?.throughWeek ?? null,
           games: num(fd, `games_${player.id}`),
           average: num(fd, `average_${player.id}`),
           totalScore: num(fd, `total_${player.id}`),
@@ -713,6 +760,10 @@ export async function resetLeagueAction(_prev: ActionResult, fd: FormData): Prom
 }
 
 /* ------------------------------------------------------- read-only for admin */
+
+export async function storageWarning(): Promise<boolean> {
+  return storageIsEphemeral();
+}
 
 export async function getLeagueForAdmin(): Promise<League> {
   await assertCommissioner();

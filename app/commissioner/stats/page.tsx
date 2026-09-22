@@ -22,6 +22,9 @@ export default async function StatsAdminPage() {
   const league = await readLeague();
   const stats = computePlayerStats(league);
   const fields = league.settings.playerStatFields;
+  // Every bowler shares the same carry-over week, set when the data was imported.
+  const baselineWeek =
+    league.players.find((p) => p.manualStats?.throughWeek != null)?.manualStats.throughWeek ?? null;
 
   const teams = [...league.teams].sort((a, b) => a.sortOrder - b.sortOrder);
   const grouped = [
@@ -39,10 +42,11 @@ export default async function StatsAdminPage() {
       <div>
         <h2 className="display text-[1.6rem]">Manage Stats</h2>
         <p className="hint mt-1 max-w-3xl">
-          Average, total pins and strikes are calculated from the game scores you enter under{" "}
-          <span className="text-muted">Enter Scores</span> — that's the easiest way to keep them
-          right. Use the fields below only to post a number directly, which overrides the calculated
-          one. A blank box always means "calculate it".
+          The numbers below are the season totals carried over from your spreadsheet, and they run{" "}
+          <strong>through week {baselineWeek ?? "\u2014"}</strong>. Game scores you enter for any
+          later week are <strong>added on top</strong>, so averages keep moving as the season goes
+          on \u2014 you do not need to come back here every week. Edit a value only to correct the
+          carried-over total; clear it to calculate that bowler purely from entered games.
         </p>
       </div>
 

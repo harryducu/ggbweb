@@ -12,6 +12,12 @@ export type GameNumber = 1 | 2 | 3;
  * derived from game scores.
  */
 export interface ManualPlayerStats {
+  /**
+   * Week these totals run through. Games entered for later weeks are ADDED to
+   * them, so the season keeps accumulating from a spreadsheet starting point.
+   * Null means the numbers are a flat override that never changes.
+   */
+  throughWeek: number | null;
   games: number | null;
   average: number | null;
   totalScore: number | null;
@@ -38,6 +44,8 @@ export interface Player {
 
 /** Same idea as ManualPlayerStats, for a team's record and pin total. */
 export interface ManualTeamRecord {
+  /** Week this record runs through; later weeks are added on top. */
+  throughWeek: number | null;
   wins: number | null;
   losses: number | null;
   ties: number | null;

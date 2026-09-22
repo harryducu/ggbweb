@@ -107,6 +107,39 @@ Two discrepancies in the source workbook, left as-is rather than papered over:
 Still to add: team logos and player photos. Until then teams show a colour plate
 or short code and players show their initials, both by design.
 
+## Deploying to Vercel
+
+The commissioner panel **cannot save** on Vercel until you add storage. Vercel gives each
+request a read-only filesystem, so writing `data/league.json` throws, and anything that did
+get written would be thrown away on the next deploy. The admin panel detects this and shows
+a red banner explaining it.
+
+To fix it, once:
+
+1. Vercel dashboard → your project → **Storage** → **Create** → **Blob**.
+2. Connect the store to the project.
+3. Redeploy.
+
+That injects `BLOB_READ_WRITE_TOKEN`, which is the only signal the app needs — it switches
+to Blob storage automatically, for both the league document and uploaded photos and logos.
+On first load it seeds the store from the workbook data baked into `lib/seed.ts`.
+
+Also set `COMMISSIONER_PASSWORD` and `SESSION_SECRET` as environment variables in Vercel;
+`.env.local` is not deployed.
+
+Note that once Blob is live, production data lives in Blob, not in the repo's
+`data/league.json`. Editing that file locally will not change the deployed site.
+
+## How season totals accumulate
+
+Each bowler and team carries a set of season totals from the spreadsheet, tagged with the
+week they run **through** (week 2). Scores entered for any later week are **added on top** —
+so entering week 3 moves the averages, records and pin totals rather than being ignored.
+You never have to re-enter the carried-over numbers.
+
+Clear a bowler's or team's carried-over values to calculate them purely from entered game
+scores instead. A blank box always means "calculate it".
+
 ## Testing
 
 ```bash

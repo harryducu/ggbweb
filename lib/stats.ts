@@ -137,19 +137,44 @@ export function computeStandings(league: League): Standing[] {
     }
   }
 
+  // Results from weeks after each team's baseline week, added on top of a
+  // posted record rather than replacing it.
+  const afterWeek = new Map<string, { wins: number; losses: number; ties: number; pins: number }>();
+  for (const team of league.teams) {
+    const through = team.manualRecord?.throughWeek;
+    if (through == null) continue;
+    const acc = { wins: 0, losses: 0, ties: 0, pins: 0 };
+    for (const week of orderedWeeks) {
+      if (week.weekNumber <= through) continue;
+      for (const r of resolveWeek(league, week)) {
+        if (!r.played) continue;
+        const isTeam1 = r.matchup.team1Id === team.id;
+        const isTeam2 = r.matchup.team2Id === team.id;
+        if (!isTeam1 && !isTeam2) continue;
+        acc.pins += (isTeam1 ? r.team1Score : r.team2Score) ?? 0;
+        if (r.tie) acc.ties += 1;
+        else if (r.winnerId === team.id) acc.wins += 1;
+        else acc.losses += 1;
+      }
+    }
+    afterWeek.set(team.id, acc);
+  }
+
   return (
     [...base.values()]
       .map((s) => {
         // A manually posted record wins over the derived one, so the site can
         // show real standings before every game score has been typed in.
-        const m = s.team.manualRecord ?? { wins: null, losses: null, ties: null, totalPins: null };
-        const wins = m.wins ?? s.wins;
-        const losses = m.losses ?? s.losses;
-        const ties = m.ties ?? s.ties;
-        const totalPins = m.totalPins ?? s.totalPins;
+        const m = s.team.manualRecord;
+        const after = m?.throughWeek == null ? null : afterWeek.get(s.team.id);
+        const wins = m?.wins == null ? s.wins : m.wins + (after?.wins ?? 0);
+        const losses = m?.losses == null ? s.losses : m.losses + (after?.losses ?? 0);
+        const ties = m?.ties == null ? s.ties : m.ties + (after?.ties ?? 0);
+        const totalPins = m?.totalPins == null ? s.totalPins : m.totalPins + (after?.pins ?? 0);
         const games = wins + losses + ties;
-        const manual =
-          m.wins !== null || m.losses !== null || m.ties !== null || m.totalPins !== null;
+        const manual = Boolean(
+          m && (m.wins !== null || m.losses !== null || m.ties !== null || m.totalPins !== null),
+        );
         return {
           ...s,
           wins,
@@ -239,13 +264,26 @@ export function computePlayerStats(league: League): PlayerStats[] {
     const derivedTotal = allScores.reduce((a, b) => a + b, 0);
     const derivedStrikes = byWeek.reduce((sum, w) => sum + (w.strikes ?? 0), 0);
 
-    const m = player.manualStats ?? { games: null, average: null, totalScore: null, strikes: null };
-    const games = m.games ?? allScores.length;
-    const totalScore = m.totalScore ?? derivedTotal;
-    const strikes = m.strikes ?? derivedStrikes;
+    // With a baseline week set, only games from later weeks are added on top of
+    // the posted totals; without one, posted totals are a flat override.
+    const m = player.manualStats;
+    const through = m?.throughWeek ?? null;
+    const later = through === null ? [] : byWeek.filter((w) => w.weekNumber > through);
+    const laterScores = later.flatMap((w) => w.scores).filter((v): v is number => v !== null);
+    const laterTotal = laterScores.reduce((a, b) => a + b, 0);
+    const laterStrikes = later.reduce((n, w) => n + (w.strikes ?? 0), 0);
+
+    const games = m?.games == null ? allScores.length : m.games + laterScores.length;
+    const totalScore = m?.totalScore == null ? derivedTotal : m.totalScore + laterTotal;
+    const strikes = m?.strikes == null ? derivedStrikes : m.strikes + laterStrikes;
+    // A posted average is only honoured as a flat override; with a baseline
+    // week it must be recomputed so later games actually move it.
     const average =
-      m.average ??
-      (games > 0 ? totalScore / games : allScores.length ? derivedTotal / allScores.length : null);
+      m?.average != null && through === null
+        ? m.average
+        : games > 0
+          ? totalScore / games
+          : null;
 
     return {
       player,
@@ -259,7 +297,9 @@ export function computePlayerStats(league: League): PlayerStats[] {
       lowGame: allScores.length ? Math.min(...allScores) : null,
       byWeek,
       averageRank: null,
-      manual: m.games !== null || m.average !== null || m.totalScore !== null || m.strikes !== null,
+      manual: Boolean(
+        m && (m.games !== null || m.average !== null || m.totalScore !== null || m.strikes !== null),
+      ),
     };
   });
 

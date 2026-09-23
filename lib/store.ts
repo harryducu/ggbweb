@@ -1,4 +1,10 @@
-import { SCHEDULE_VERSION, buildSeedLeague, scheduleForWeek } from "./seed";
+import {
+  ASSETS_VERSION,
+  BUNDLED_TEAM_LOGOS,
+  SCHEDULE_VERSION,
+  buildSeedLeague,
+  scheduleForWeek,
+} from "./seed";
 import { storage } from "./storage";
 import type { GameNumber, League } from "./types";
 
@@ -73,6 +79,34 @@ function migrateSchedule(league: League): boolean {
   return true;
 }
 
+/**
+ * Gives teams their bundled crest. Only fills a team that has none, so an
+ * uploaded logo is never replaced.
+ */
+function migrateTeamLogos(league: League): boolean {
+  if (league.settings.assetsVersion === ASSETS_VERSION) return false;
+  for (const team of league.teams) {
+    if (!team.logo && BUNDLED_TEAM_LOGOS[team.id]) team.logo = BUNDLED_TEAM_LOGOS[team.id];
+  }
+  league.settings.assetsVersion = ASSETS_VERSION;
+  return true;
+}
+
+/** Every pending upgrade for a stored league. */
+function migrate(league: League): boolean {
+  // Both run; `||` would skip the second once the first reported a change.
+  const schedule = migrateSchedule(league);
+  const logos = migrateTeamLogos(league);
+  return schedule || logos;
+}
+
+function needsMigration(league: League): boolean {
+  return (
+    league.settings.scheduleVersion !== SCHEDULE_VERSION ||
+    league.settings.assetsVersion !== ASSETS_VERSION
+  );
+}
+
 async function loadStored(): Promise<League | null> {
   const raw = await storage().readDoc();
   return raw ? (JSON.parse(raw) as League) : null;
@@ -92,10 +126,10 @@ export async function readLeague(): Promise<League> {
     // Migrating is a write, so it has to go through the same queue as any other
     // save — never by calling mutateLeague from here, which would re-enter this
     // function and deadlock on the write chain.
-    if (stored.settings.scheduleVersion !== SCHEDULE_VERSION) {
+    if (needsMigration(stored)) {
       return enqueue(async () => {
         const fresh = (await loadStored()) ?? buildSeedLeague();
-        if (migrateSchedule(fresh)) {
+        if (migrate(fresh)) {
           await storage().writeDoc(JSON.stringify(fresh, null, 2));
         }
         return fresh;
@@ -130,7 +164,7 @@ function enqueue<T>(run: () => Promise<T>): Promise<T> {
 export function mutateLeague<T>(fn: (league: League) => T | Promise<T>): Promise<T> {
   return enqueue(async () => {
     const league = (await loadStored()) ?? buildSeedLeague();
-    migrateSchedule(league);
+    migrate(league);
     const result = await fn(league);
     await storage().writeDoc(JSON.stringify(league, null, 2));
     return result;

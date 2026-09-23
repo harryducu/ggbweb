@@ -6,6 +6,7 @@
     "logo": "/brand/logo.png",
     "currentWeek": 3,
     "scheduleVersion": 2,
+    "assetsVersion": 1,
     "description": "Monday night bowling. Seven teams, four bowlers each, three games a night, one bye per team across the seven-week regular season. Top six make the playoffs.",
     "rules": "Three games every Monday night. Each game counts as its own win or loss in the standings.\nEach team sits one week out on a bye. Bye weeks do not count as wins or losses.\nEvery pair of teams meets three times over the regular season.\nTeam score for a game is the sum of its four bowlers' scores.\nA bowler missing a night scores zero unless a substitute is approved by the commissioner.\nTop six teams by points make the playoffs. Seeds 1 and 2 get a bye into the semifinals.\nTies in the standings are broken by total pins.",
     "pointsPerWin": 2,
@@ -34,7 +35,7 @@
       "abbreviation": "2F1T",
       "color": "#8b5cf6",
       "sortOrder": 0,
-      "logo": null,
+      "logo": "/brand/teams/two-fingers-one-thumb.png",
       "manualRecord": {
         "throughWeek": 2,
         "wins": 5,
@@ -53,7 +54,7 @@
       "abbreviation": "BAB",
       "color": "#6d28d9",
       "sortOrder": 1,
-      "logo": null,
+      "logo": "/brand/teams/back-alley-bowljobs.png",
       "manualRecord": {
         "throughWeek": 2,
         "wins": 6,
@@ -72,7 +73,7 @@
       "abbreviation": "SSB",
       "color": "#db2777",
       "sortOrder": 2,
-      "logo": null,
+      "logo": "/brand/teams/southside-slaw-bunnies.png",
       "manualRecord": {
         "throughWeek": 2,
         "wins": 3,
@@ -91,7 +92,7 @@
       "abbreviation": "OPL",
       "color": "#b91c1c",
       "sortOrder": 3,
-      "logo": null,
+      "logo": "/brand/teams/osama-pin-laden.png",
       "manualRecord": {
         "throughWeek": 2,
         "wins": 0,
@@ -110,7 +111,7 @@
       "abbreviation": "PP",
       "color": "#71717a",
       "sortOrder": 4,
-      "logo": null,
+      "logo": "/brand/teams/pocket-pounders.png",
       "manualRecord": {
         "throughWeek": 2,
         "wins": 2,
@@ -129,7 +130,7 @@
       "abbreviation": "GT",
       "color": "#22c55e",
       "sortOrder": 5,
-      "logo": null,
+      "logo": "/brand/teams/goop-troop.png",
       "manualRecord": {
         "throughWeek": 2,
         "wins": 2,
@@ -148,7 +149,7 @@
       "abbreviation": "SG",
       "color": "#2563eb",
       "sortOrder": 6,
-      "logo": null,
+      "logo": "/brand/teams/sunday-guys.png",
       "manualRecord": {
         "throughWeek": 2,
         "wins": 0,

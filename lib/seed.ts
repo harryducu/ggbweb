@@ -316,6 +316,24 @@ const WEEK1_POWER_ORDER: string[] = [T.TF, T.BA, T.SS, T.OP, T.PP, T.GT, T.SG];
  */
 const TOTALS_THROUGH_WEEK = 2;
 
+/**
+ * Team crests, cropped from the league's own power-rankings graphic and bundled
+ * with the app so they work locally and in production without an upload. Only
+ * applied to a team that has no logo, so anything uploaded later wins.
+ */
+export const BUNDLED_TEAM_LOGOS: Record<string, string> = {
+  [T.TF]: "/brand/teams/two-fingers-one-thumb.png",
+  [T.BA]: "/brand/teams/back-alley-bowljobs.png",
+  [T.SS]: "/brand/teams/southside-slaw-bunnies.png",
+  [T.OP]: "/brand/teams/osama-pin-laden.png",
+  [T.PP]: "/brand/teams/pocket-pounders.png",
+  [T.GT]: "/brand/teams/goop-troop.png",
+  [T.SG]: "/brand/teams/sunday-guys.png",
+};
+
+/** Bumped when the bundled crests change, so stored leagues pick them up. */
+export const ASSETS_VERSION = 1;
+
 /** Bumped when the fixture list changes, so stored leagues can be migrated. */
 export const SCHEDULE_VERSION = 2;
 
@@ -363,7 +381,7 @@ export function buildSeedLeague(): League {
     const wasAt = WEEK1_POWER_ORDER.indexOf(t.id) + 1;
     return {
       ...t,
-      logo: null,
+      logo: BUNDLED_TEAM_LOGOS[t.id] ?? null,
       manualRecord: {
         throughWeek: TOTALS_THROUGH_WEEK,
         wins: record.wins,
@@ -439,6 +457,7 @@ export function buildSeedLeague(): League {
       logo: "/brand/logo.png",
       currentWeek: 3,
       scheduleVersion: SCHEDULE_VERSION,
+      assetsVersion: ASSETS_VERSION,
       description:
         "Monday night bowling. Seven teams, four bowlers each, three games a night, one bye per team across the seven-week regular season. Top six make the playoffs.",
       rules: [

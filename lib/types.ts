@@ -151,6 +151,8 @@ export interface LeagueSettings {
   currentWeek: number;
   /** Which revision of the fixture list this league is on. */
   scheduleVersion?: number;
+  /** Which revision of the bundled crests this league is on. */
+  assetsVersion?: number;
   description: string;
   rules: string;
   /** Points awarded in the standings. */

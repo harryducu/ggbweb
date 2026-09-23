@@ -68,7 +68,17 @@ const T = {
 
 type Pair = readonly [string, string];
 
-/** [byeTeam, game1 pairs, game2 pairs, game3 pairs] for each of the 7 weeks. */
+/**
+ * [byeTeam, game1 pairs, game2 pairs, game3 pairs] for each of the 7 weeks.
+ *
+ * Weeks 3 to 7 differ from the commissioner's original spreadsheet. That version
+ * left week 5 with two repeated pairings — 2 Fingers met Pocket Pounders twice
+ * and Goop Troop met Osama twice on the same night — because the other weeks
+ * used up the rest of the fixtures first. Six matchups across weeks 3, 5 and 7
+ * were swapped so every team faces three different opponents every night. Byes
+ * are unchanged, weeks 1 and 2 are exactly as bowled, and all 21 pairings still
+ * meet exactly three times.
+ */
 const SCHEDULE: Array<{ bye: string; games: [Pair[], Pair[], Pair[]] }> = [
   {
     bye: T.PP,
@@ -114,19 +124,19 @@ const SCHEDULE: Array<{ bye: string; games: [Pair[], Pair[], Pair[]] }> = [
     bye: T.SS,
     games: [
       [
-        [T.TF, T.GT],
-        [T.BA, T.PP],
+        [T.BA, T.TF],
+        [T.GT, T.PP],
         [T.OP, T.SG],
       ],
       [
-        [T.GT, T.OP],
-        [T.TF, T.BA],
-        [T.PP, T.SG],
+        [T.BA, T.PP],
+        [T.GT, T.SG],
+        [T.OP, T.TF],
       ],
       [
-        [T.PP, T.GT],
-        [T.OP, T.TF],
-        [T.SG, T.BA],
+        [T.BA, T.SG],
+        [T.GT, T.OP],
+        [T.PP, T.TF],
       ],
     ],
   },
@@ -134,19 +144,19 @@ const SCHEDULE: Array<{ bye: string; games: [Pair[], Pair[], Pair[]] }> = [
     bye: T.OP,
     games: [
       [
-        [T.TF, T.SG],
-        [T.GT, T.PP],
+        [T.BA, T.TF],
+        [T.GT, T.SG],
+        [T.PP, T.SS],
+      ],
+      [
+        [T.BA, T.GT],
+        [T.PP, T.SG],
+        [T.SS, T.TF],
+      ],
+      [
         [T.BA, T.SS],
-      ],
-      [
-        [T.SG, T.PP],
-        [T.GT, T.BA],
-        [T.TF, T.SS],
-      ],
-      [
-        [T.TF, T.BA],
-        [T.SS, T.PP],
-        [T.SG, T.GT],
+        [T.GT, T.PP],
+        [T.SG, T.TF],
       ],
     ],
   },
@@ -154,19 +164,19 @@ const SCHEDULE: Array<{ bye: string; games: [Pair[], Pair[], Pair[]] }> = [
     bye: T.BA,
     games: [
       [
-        [T.TF, T.PP],
         [T.GT, T.OP],
-        [T.SS, T.SG],
+        [T.PP, T.SG],
+        [T.SS, T.TF],
       ],
       [
         [T.GT, T.SS],
-        [T.TF, T.PP],
         [T.OP, T.SG],
+        [T.PP, T.TF],
       ],
       [
-        [T.OP, T.GT],
-        [T.SS, T.TF],
-        [T.SG, T.PP],
+        [T.GT, T.TF],
+        [T.OP, T.PP],
+        [T.SS, T.SG],
       ],
     ],
   },
@@ -174,19 +184,19 @@ const SCHEDULE: Array<{ bye: string; games: [Pair[], Pair[], Pair[]] }> = [
     bye: T.GT,
     games: [
       [
-        [T.TF, T.PP],
-        [T.BA, T.OP],
-        [T.SG, T.SS],
-      ],
-      [
-        [T.PP, T.SS],
-        [T.SG, T.BA],
+        [T.BA, T.SG],
         [T.OP, T.TF],
+        [T.PP, T.SS],
       ],
       [
-        [T.TF, T.SG],
-        [T.SS, T.BA],
-        [T.PP, T.OP],
+        [T.BA, T.OP],
+        [T.PP, T.TF],
+        [T.SS, T.SG],
+      ],
+      [
+        [T.BA, T.SS],
+        [T.OP, T.PP],
+        [T.SG, T.TF],
       ],
     ],
   },
@@ -194,19 +204,19 @@ const SCHEDULE: Array<{ bye: string; games: [Pair[], Pair[], Pair[]] }> = [
     bye: T.TF,
     games: [
       [
-        [T.OP, T.PP],
-        [T.BA, T.SG],
+        [T.BA, T.PP],
         [T.GT, T.SS],
-      ],
-      [
-        [T.GT, T.SG],
-        [T.PP, T.BA],
-        [T.OP, T.SS],
-      ],
-      [
         [T.OP, T.SG],
-        [T.SS, T.PP],
-        [T.GT, T.BA],
+      ],
+      [
+        [T.BA, T.GT],
+        [T.OP, T.SS],
+        [T.PP, T.SG],
+      ],
+      [
+        [T.BA, T.SG],
+        [T.GT, T.OP],
+        [T.PP, T.SS],
       ],
     ],
   },
@@ -305,6 +315,14 @@ const WEEK1_POWER_ORDER: string[] = [T.TF, T.BA, T.SS, T.OP, T.PP, T.GT, T.SG];
  * being frozen at the spreadsheet's numbers.
  */
 const TOTALS_THROUGH_WEEK = 2;
+
+/** Bumped when the fixture list changes, so stored leagues can be migrated. */
+export const SCHEDULE_VERSION = 2;
+
+/** The corrected fixtures, keyed by week number, for migrating an existing league. */
+export function scheduleForWeek(weekNumber: number): { bye: string; games: Pair[][] } | undefined {
+  return SCHEDULE[weekNumber - 1];
+}
 
 /** Monday nights, starting the first Monday of the season. */
 function mondayDates(count: number, firstMonday: string): string[] {
@@ -420,6 +438,7 @@ export function buildSeedLeague(): League {
       season: "2026 Season",
       logo: "/brand/logo.png",
       currentWeek: 3,
+      scheduleVersion: SCHEDULE_VERSION,
       description:
         "Monday night bowling. Seven teams, four bowlers each, three games a night, one bye per team across the seven-week regular season. Top six make the playoffs.",
       rules: [

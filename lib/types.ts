@@ -149,6 +149,8 @@ export interface LeagueSettings {
   season: string;
   logo: string | null;
   currentWeek: number;
+  /** Which revision of the fixture list this league is on. */
+  scheduleVersion?: number;
   description: string;
   rules: string;
   /** Points awarded in the standings. */

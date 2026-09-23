@@ -1,6 +1,6 @@
-import { buildSeedLeague } from "./seed";
+import { SCHEDULE_VERSION, buildSeedLeague, scheduleForWeek } from "./seed";
 import { storage } from "./storage";
-import type { League } from "./types";
+import type { GameNumber, League } from "./types";
 
 /**
  * Serializes writes so two commissioner saves landing at the same moment can't
@@ -25,24 +25,89 @@ function isBuildPhase(): boolean {
   return process.env.NEXT_PHASE === "phase-production-build";
 }
 
+/**
+ * Brings a stored league onto the current fixture list.
+ *
+ * A week is only rewritten when nothing has been bowled in it — no player
+ * scores and no team totals — so a season in progress can never lose a result.
+ * Weeks already played keep what they have, and the league is marked migrated
+ * either way so this runs once.
+ */
+function migrateSchedule(league: League): boolean {
+  if (league.settings.scheduleVersion === SCHEDULE_VERSION) return false;
+
+  const teamIds = new Set(league.teams.map((t) => t.id));
+
+  for (const week of league.weeks) {
+    const fixtures = scheduleForWeek(week.weekNumber);
+    if (!fixtures) continue;
+
+    const bowled =
+      week.playerScores.some((s) => s.score !== null) ||
+      week.matchups.some((m) => m.team1Score !== null || m.team2Score !== null);
+    if (bowled) continue;
+
+    // Only safe while every team named in the new fixtures still exists.
+    if (
+      !fixtures.games
+        .flat()
+        .flat()
+        .every((id) => teamIds.has(id))
+    )
+      continue;
+
+    week.byeTeamId = fixtures.bye;
+    week.matchups = fixtures.games.flatMap((pairs, gi) =>
+      pairs.map(([a, b], pi) => ({
+        id: `w${week.weekNumber}g${gi + 1}m${pi + 1}`,
+        game: (gi + 1) as GameNumber,
+        team1Id: a,
+        team2Id: b,
+        team1Score: null,
+        team2Score: null,
+      })),
+    );
+  }
+
+  league.settings.scheduleVersion = SCHEDULE_VERSION;
+  return true;
+}
+
+async function loadStored(): Promise<League | null> {
+  const raw = await storage().readDoc();
+  return raw ? (JSON.parse(raw) as League) : null;
+}
+
 export async function readLeague(): Promise<League> {
   if (isBuildPhase()) {
     try {
-      const raw = await storage().readDoc();
-      return raw ? (JSON.parse(raw) as League) : buildSeedLeague();
+      return (await loadStored()) ?? buildSeedLeague();
     } catch {
       return buildSeedLeague();
     }
   }
 
-  const raw = await storage().readDoc();
-  if (raw) return JSON.parse(raw) as League;
+  const stored = await loadStored();
+  if (stored) {
+    // Migrating is a write, so it has to go through the same queue as any other
+    // save — never by calling mutateLeague from here, which would re-enter this
+    // function and deadlock on the write chain.
+    if (stored.settings.scheduleVersion !== SCHEDULE_VERSION) {
+      return enqueue(async () => {
+        const fresh = (await loadStored()) ?? buildSeedLeague();
+        if (migrateSchedule(fresh)) {
+          await storage().writeDoc(JSON.stringify(fresh, null, 2));
+        }
+        return fresh;
+      });
+    }
+    return stored;
+  }
 
   if (!seeding) {
     seeding = (async () => {
-      // Re-check inside the guard: another caller may have seeded already.
-      const existing = await storage().readDoc();
-      if (existing) return JSON.parse(existing) as League;
+      const existing = await loadStored();
+      if (existing) return existing;
       const seed = buildSeedLeague();
       await storage().writeDoc(JSON.stringify(seed, null, 2));
       return seed;
@@ -53,18 +118,23 @@ export async function readLeague(): Promise<League> {
   return seeding;
 }
 
+/** Runs work serially against the league document. */
+function enqueue<T>(run: () => Promise<T>): Promise<T> {
+  const next = writeChain.then(run, run);
+  // Keep the chain alive even if the work throws.
+  writeChain = next.catch(() => undefined);
+  return next;
+}
+
 /** Read, transform, and persist the league in one serialized operation. */
 export function mutateLeague<T>(fn: (league: League) => T | Promise<T>): Promise<T> {
-  const run = async (): Promise<T> => {
-    const league = await readLeague();
+  return enqueue(async () => {
+    const league = (await loadStored()) ?? buildSeedLeague();
+    migrateSchedule(league);
     const result = await fn(league);
     await storage().writeDoc(JSON.stringify(league, null, 2));
     return result;
-  };
-  const next = writeChain.then(run, run);
-  // Keep the chain alive even if a mutation throws.
-  writeChain = next.catch(() => undefined);
-  return next;
+  });
 }
 
 export async function resetLeague(): Promise<void> {

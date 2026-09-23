@@ -5,6 +5,7 @@
     "season": "2026 Season",
     "logo": "/brand/logo.png",
     "currentWeek": 3,
+    "scheduleVersion": 2,
     "description": "Monday night bowling. Seven teams, four bowlers each, three games a night, one bye per team across the seven-week regular season. Top six make the playoffs.",
     "rules": "Three games every Monday night. Each game counts as its own win or loss in the standings.\nEach team sits one week out on a bye. Bye weeks do not count as wins or losses.\nEvery pair of teams meets three times over the regular season.\nTeam score for a game is the sum of its four bowlers' scores.\nA bowler missing a night scores zero unless a substitute is approved by the commissioner.\nTop six teams by points make the playoffs. Seeds 1 and 2 get a bye into the semifinals.\nTies in the standings are broken by total pins.",
     "pointsPerWin": 2,
@@ -873,15 +874,15 @@
         {
           "id": "w3g1m1",
           "game": 1,
-          "team1Id": "two-fingers-one-thumb",
-          "team2Id": "goop-troop",
+          "team1Id": "back-alley-bowljobs",
+          "team2Id": "two-fingers-one-thumb",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w3g1m2",
           "game": 1,
-          "team1Id": "back-alley-bowljobs",
+          "team1Id": "goop-troop",
           "team2Id": "pocket-pounders",
           "team1Score": null,
           "team2Score": null
@@ -897,48 +898,48 @@
         {
           "id": "w3g2m1",
           "game": 2,
-          "team1Id": "goop-troop",
-          "team2Id": "osama-pin-laden",
+          "team1Id": "back-alley-bowljobs",
+          "team2Id": "pocket-pounders",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w3g2m2",
           "game": 2,
-          "team1Id": "two-fingers-one-thumb",
-          "team2Id": "back-alley-bowljobs",
+          "team1Id": "goop-troop",
+          "team2Id": "sunday-guys",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w3g2m3",
           "game": 2,
-          "team1Id": "pocket-pounders",
-          "team2Id": "sunday-guys",
-          "team1Score": null,
-          "team2Score": null
-        },
-        {
-          "id": "w3g3m1",
-          "game": 3,
-          "team1Id": "pocket-pounders",
-          "team2Id": "goop-troop",
-          "team1Score": null,
-          "team2Score": null
-        },
-        {
-          "id": "w3g3m2",
-          "game": 3,
           "team1Id": "osama-pin-laden",
           "team2Id": "two-fingers-one-thumb",
           "team1Score": null,
           "team2Score": null
         },
         {
+          "id": "w3g3m1",
+          "game": 3,
+          "team1Id": "back-alley-bowljobs",
+          "team2Id": "sunday-guys",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
+          "id": "w3g3m2",
+          "game": 3,
+          "team1Id": "goop-troop",
+          "team2Id": "osama-pin-laden",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
           "id": "w3g3m3",
           "game": 3,
-          "team1Id": "sunday-guys",
-          "team2Id": "back-alley-bowljobs",
+          "team1Id": "pocket-pounders",
+          "team2Id": "two-fingers-one-thumb",
           "team1Score": null,
           "team2Score": null
         }
@@ -956,8 +957,8 @@
         {
           "id": "w4g1m1",
           "game": 1,
-          "team1Id": "two-fingers-one-thumb",
-          "team2Id": "sunday-guys",
+          "team1Id": "back-alley-bowljobs",
+          "team2Id": "two-fingers-one-thumb",
           "team1Score": null,
           "team2Score": null
         },
@@ -965,14 +966,14 @@
           "id": "w4g1m2",
           "game": 1,
           "team1Id": "goop-troop",
-          "team2Id": "pocket-pounders",
+          "team2Id": "sunday-guys",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w4g1m3",
           "game": 1,
-          "team1Id": "back-alley-bowljobs",
+          "team1Id": "pocket-pounders",
           "team2Id": "southside-slaw-bunnies",
           "team1Score": null,
           "team2Score": null
@@ -980,39 +981,39 @@
         {
           "id": "w4g2m1",
           "game": 2,
-          "team1Id": "sunday-guys",
-          "team2Id": "pocket-pounders",
+          "team1Id": "back-alley-bowljobs",
+          "team2Id": "goop-troop",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w4g2m2",
           "game": 2,
-          "team1Id": "goop-troop",
-          "team2Id": "back-alley-bowljobs",
+          "team1Id": "pocket-pounders",
+          "team2Id": "sunday-guys",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w4g2m3",
           "game": 2,
-          "team1Id": "two-fingers-one-thumb",
-          "team2Id": "southside-slaw-bunnies",
+          "team1Id": "southside-slaw-bunnies",
+          "team2Id": "two-fingers-one-thumb",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w4g3m1",
           "game": 3,
-          "team1Id": "two-fingers-one-thumb",
-          "team2Id": "back-alley-bowljobs",
+          "team1Id": "back-alley-bowljobs",
+          "team2Id": "southside-slaw-bunnies",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w4g3m2",
           "game": 3,
-          "team1Id": "southside-slaw-bunnies",
+          "team1Id": "goop-troop",
           "team2Id": "pocket-pounders",
           "team1Score": null,
           "team2Score": null
@@ -1021,7 +1022,7 @@
           "id": "w4g3m3",
           "game": 3,
           "team1Id": "sunday-guys",
-          "team2Id": "goop-troop",
+          "team2Id": "two-fingers-one-thumb",
           "team1Score": null,
           "team2Score": null
         }
@@ -1039,16 +1040,16 @@
         {
           "id": "w5g1m1",
           "game": 1,
-          "team1Id": "two-fingers-one-thumb",
-          "team2Id": "pocket-pounders",
+          "team1Id": "goop-troop",
+          "team2Id": "osama-pin-laden",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w5g1m2",
           "game": 1,
-          "team1Id": "goop-troop",
-          "team2Id": "osama-pin-laden",
+          "team1Id": "pocket-pounders",
+          "team2Id": "sunday-guys",
           "team1Score": null,
           "team2Score": null
         },
@@ -1056,7 +1057,7 @@
           "id": "w5g1m3",
           "game": 1,
           "team1Id": "southside-slaw-bunnies",
-          "team2Id": "sunday-guys",
+          "team2Id": "two-fingers-one-thumb",
           "team1Score": null,
           "team2Score": null
         },
@@ -1071,40 +1072,40 @@
         {
           "id": "w5g2m2",
           "game": 2,
-          "team1Id": "two-fingers-one-thumb",
-          "team2Id": "pocket-pounders",
-          "team1Score": null,
-          "team2Score": null
-        },
-        {
-          "id": "w5g2m3",
-          "game": 2,
           "team1Id": "osama-pin-laden",
           "team2Id": "sunday-guys",
           "team1Score": null,
           "team2Score": null
         },
         {
+          "id": "w5g2m3",
+          "game": 2,
+          "team1Id": "pocket-pounders",
+          "team2Id": "two-fingers-one-thumb",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
           "id": "w5g3m1",
           "game": 3,
-          "team1Id": "osama-pin-laden",
-          "team2Id": "goop-troop",
+          "team1Id": "goop-troop",
+          "team2Id": "two-fingers-one-thumb",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w5g3m2",
           "game": 3,
-          "team1Id": "southside-slaw-bunnies",
-          "team2Id": "two-fingers-one-thumb",
+          "team1Id": "osama-pin-laden",
+          "team2Id": "pocket-pounders",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w5g3m3",
           "game": 3,
-          "team1Id": "sunday-guys",
-          "team2Id": "pocket-pounders",
+          "team1Id": "southside-slaw-bunnies",
+          "team2Id": "sunday-guys",
           "team1Score": null,
           "team2Score": null
         }
@@ -1122,23 +1123,23 @@
         {
           "id": "w6g1m1",
           "game": 1,
-          "team1Id": "two-fingers-one-thumb",
-          "team2Id": "pocket-pounders",
+          "team1Id": "back-alley-bowljobs",
+          "team2Id": "sunday-guys",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w6g1m2",
           "game": 1,
-          "team1Id": "back-alley-bowljobs",
-          "team2Id": "osama-pin-laden",
+          "team1Id": "osama-pin-laden",
+          "team2Id": "two-fingers-one-thumb",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w6g1m3",
           "game": 1,
-          "team1Id": "sunday-guys",
+          "team1Id": "pocket-pounders",
           "team2Id": "southside-slaw-bunnies",
           "team1Score": null,
           "team2Score": null
@@ -1146,48 +1147,48 @@
         {
           "id": "w6g2m1",
           "game": 2,
-          "team1Id": "pocket-pounders",
-          "team2Id": "southside-slaw-bunnies",
+          "team1Id": "back-alley-bowljobs",
+          "team2Id": "osama-pin-laden",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w6g2m2",
           "game": 2,
-          "team1Id": "sunday-guys",
-          "team2Id": "back-alley-bowljobs",
+          "team1Id": "pocket-pounders",
+          "team2Id": "two-fingers-one-thumb",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w6g2m3",
           "game": 2,
-          "team1Id": "osama-pin-laden",
-          "team2Id": "two-fingers-one-thumb",
+          "team1Id": "southside-slaw-bunnies",
+          "team2Id": "sunday-guys",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w6g3m1",
           "game": 3,
-          "team1Id": "two-fingers-one-thumb",
-          "team2Id": "sunday-guys",
+          "team1Id": "back-alley-bowljobs",
+          "team2Id": "southside-slaw-bunnies",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w6g3m2",
           "game": 3,
-          "team1Id": "southside-slaw-bunnies",
-          "team2Id": "back-alley-bowljobs",
+          "team1Id": "osama-pin-laden",
+          "team2Id": "pocket-pounders",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w6g3m3",
           "game": 3,
-          "team1Id": "pocket-pounders",
-          "team2Id": "osama-pin-laden",
+          "team1Id": "sunday-guys",
+          "team2Id": "two-fingers-one-thumb",
           "team1Score": null,
           "team2Score": null
         }
@@ -1205,7 +1206,7 @@
         {
           "id": "w7g1m1",
           "game": 1,
-          "team1Id": "osama-pin-laden",
+          "team1Id": "back-alley-bowljobs",
           "team2Id": "pocket-pounders",
           "team1Score": null,
           "team2Score": null
@@ -1213,37 +1214,29 @@
         {
           "id": "w7g1m2",
           "game": 1,
-          "team1Id": "back-alley-bowljobs",
-          "team2Id": "sunday-guys",
+          "team1Id": "goop-troop",
+          "team2Id": "southside-slaw-bunnies",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w7g1m3",
           "game": 1,
-          "team1Id": "goop-troop",
-          "team2Id": "southside-slaw-bunnies",
+          "team1Id": "osama-pin-laden",
+          "team2Id": "sunday-guys",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w7g2m1",
           "game": 2,
-          "team1Id": "goop-troop",
-          "team2Id": "sunday-guys",
+          "team1Id": "back-alley-bowljobs",
+          "team2Id": "goop-troop",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w7g2m2",
-          "game": 2,
-          "team1Id": "pocket-pounders",
-          "team2Id": "back-alley-bowljobs",
-          "team1Score": null,
-          "team2Score": null
-        },
-        {
-          "id": "w7g2m3",
           "game": 2,
           "team1Id": "osama-pin-laden",
           "team2Id": "southside-slaw-bunnies",
@@ -1251,9 +1244,17 @@
           "team2Score": null
         },
         {
+          "id": "w7g2m3",
+          "game": 2,
+          "team1Id": "pocket-pounders",
+          "team2Id": "sunday-guys",
+          "team1Score": null,
+          "team2Score": null
+        },
+        {
           "id": "w7g3m1",
           "game": 3,
-          "team1Id": "osama-pin-laden",
+          "team1Id": "back-alley-bowljobs",
           "team2Id": "sunday-guys",
           "team1Score": null,
           "team2Score": null
@@ -1261,16 +1262,16 @@
         {
           "id": "w7g3m2",
           "game": 3,
-          "team1Id": "southside-slaw-bunnies",
-          "team2Id": "pocket-pounders",
+          "team1Id": "goop-troop",
+          "team2Id": "osama-pin-laden",
           "team1Score": null,
           "team2Score": null
         },
         {
           "id": "w7g3m3",
           "game": 3,
-          "team1Id": "goop-troop",
-          "team2Id": "back-alley-bowljobs",
+          "team1Id": "pocket-pounders",
+          "team2Id": "southside-slaw-bunnies",
           "team1Score": null,
           "team2Score": null
         }

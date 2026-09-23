@@ -103,10 +103,11 @@ Two discrepancies in the source workbook, left as-is rather than papered over:
 
 - **Pocket Pounders** posts 1434 pins, but its four bowlers sum to 1404 — a 30-pin
   gap. The team total is shown as the workbook states it.
-- **Week 5 repeats two pairings** (2F1T plays Pocket Pounders twice, Goop Troop
-  plays Osama Pin Laden twice). The season-wide total still works out exactly —
-  all 21 pairs meet three times — so it may be intentional. Fix it under Schedule
-  if not.
+- **Week 5 repeated two pairings** in the original sheet (2F1T met Pocket Pounders
+  twice and Goop Troop met Osama twice on the same night). That was forced by the
+  other weeks rather than a typo in week 5, so six matchups across weeks 3, 5 and
+  7 were swapped to clear it. Byes are unchanged, weeks 1 and 2 are exactly as
+  bowled, and all 21 pairings still meet three times.
 
 Still to add: team logos and player photos. Until then teams show a colour plate
 or short code and players show their initials, both by design.

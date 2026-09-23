@@ -19,12 +19,7 @@ export interface StorageDriver {
   readDoc(): Promise<string | null>;
   writeDoc(json: string): Promise<void>;
   /** Stores an image and returns the URL to render it from. */
-  putImage(
-    folder: string,
-    filename: string,
-    bytes: Buffer,
-    contentType: string,
-  ): Promise<string>;
+  putImage(folder: string, filename: string, bytes: Buffer, contentType: string): Promise<string>;
   /** Best effort; never throws. */
   deleteImage(ref: string): Promise<void>;
 }
@@ -82,13 +77,55 @@ const filesystemDriver: StorageDriver = {
 
 const DOC_KEY = "league/league.json";
 
+/**
+ * Vercel injects BLOB_READ_WRITE_TOKEN when a Blob store is connected, but a
+ * store created with a custom environment-variable prefix produces something
+ * like MYSTORE_BLOB_READ_WRITE_TOKEN instead. Accept either, and pass the token
+ * explicitly rather than relying on the SDK picking it up.
+ */
+/**
+ * Turns an SDK failure into something a commissioner can act on. A wrong or
+ * revoked token otherwise surfaces as a bare "This store does not exist",
+ * which says nothing about where to go and fix it.
+ */
+async function withBlobContext<T>(what: string, run: () => Promise<T>): Promise<T> {
+  try {
+    return await run();
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Could not ${what} from Vercel Blob (${detail}). Check that a Blob store is ` +
+        `still connected to this project and redeploy. Token variable: ${blobTokenName() ?? "none"}.`,
+    );
+  }
+}
+
+export function blobToken(): string | undefined {
+  if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
+  const key = Object.keys(process.env).find(
+    (k) => k.endsWith("BLOB_READ_WRITE_TOKEN") && process.env[k],
+  );
+  return key ? process.env[key] : undefined;
+}
+
+/** Name of the variable the token was found under, for the diagnostics panel. */
+export function blobTokenName(): string | null {
+  if (process.env.BLOB_READ_WRITE_TOKEN) return "BLOB_READ_WRITE_TOKEN";
+  return (
+    Object.keys(process.env).find((k) => k.endsWith("BLOB_READ_WRITE_TOKEN") && process.env[k]) ??
+    null
+  );
+}
+
 function blobDriver(): StorageDriver {
   return {
     name: "vercel-blob",
 
     async readDoc() {
       const { list } = await import("@vercel/blob");
-      const { blobs } = await list({ prefix: DOC_KEY, limit: 1 });
+      const { blobs } = await withBlobContext("read the league data", () =>
+        list({ prefix: DOC_KEY, limit: 1, token: blobToken() }),
+      );
       const found = blobs.find((b) => b.pathname === DOC_KEY);
       if (!found) return null;
       // Blob URLs sit behind a CDN, so ask for the origin copy every time or
@@ -100,18 +137,22 @@ function blobDriver(): StorageDriver {
 
     async writeDoc(json) {
       const { put } = await import("@vercel/blob");
-      await put(DOC_KEY, json, {
-        access: "public",
-        contentType: "application/json",
-        addRandomSuffix: false,
-        allowOverwrite: true,
-        cacheControlMaxAge: 0,
-      });
+      await withBlobContext("save the league data", () =>
+        put(DOC_KEY, json, {
+          token: blobToken(),
+          access: "public",
+          contentType: "application/json",
+          addRandomSuffix: false,
+          allowOverwrite: true,
+          cacheControlMaxAge: 0,
+        }),
+      );
     },
 
     async putImage(folder, filename, bytes, contentType) {
       const { put } = await import("@vercel/blob");
       const { url } = await put(`uploads/${folder}/${filename}`, bytes, {
+        token: blobToken(),
         access: "public",
         contentType,
         addRandomSuffix: false,
@@ -124,7 +165,7 @@ function blobDriver(): StorageDriver {
       if (!ref.startsWith("http")) return;
       try {
         const { del } = await import("@vercel/blob");
-        await del(ref);
+        await del(ref, { token: blobToken() });
       } catch {
         // Already gone, or the token no longer has access.
       }
@@ -138,12 +179,25 @@ let cached: StorageDriver | null = null;
 
 export function storage(): StorageDriver {
   if (!cached) {
-    cached = process.env.BLOB_READ_WRITE_TOKEN ? blobDriver() : filesystemDriver;
+    cached = blobToken() ? blobDriver() : filesystemDriver;
   }
   return cached;
 }
 
 /** True when writes cannot possibly persist — used to warn in the admin panel. */
 export function storageIsEphemeral(): boolean {
-  return Boolean(process.env.VERCEL) && !process.env.BLOB_READ_WRITE_TOKEN;
+  return Boolean(process.env.VERCEL) && !blobToken();
+}
+
+/** What the running deployment can actually see, for the diagnostics panel. */
+export function storageReport() {
+  return {
+    onVercel: Boolean(process.env.VERCEL),
+    driver: storage().name,
+    tokenVariable: blobTokenName(),
+    blobEnvVarsSeen: Object.keys(process.env)
+      .filter((k) => k.includes("BLOB"))
+      .sort(),
+    vercelEnv: process.env.VERCEL_ENV ?? null,
+  };
 }

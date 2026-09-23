@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { assertCommissioner, checkPassword, createSession, destroySession } from "./auth";
 import { mutateLeague, readLeague, resetLeague } from "./store";
 import { computeStandings } from "./stats";
-import { storageIsEphemeral } from "./storage";
+import { storage, storageIsEphemeral, storageReport } from "./storage";
 import { UploadError, deleteUpload, saveImage } from "./upload";
 import type { GameNumber, League, Player, Team } from "./types";
 
@@ -760,6 +760,54 @@ export async function resetLeagueAction(_prev: ActionResult, fd: FormData): Prom
 }
 
 /* ------------------------------------------------------- read-only for admin */
+
+/**
+ * Proves whether this deployment can actually persist a change, by writing a
+ * throwaway value into the league document and reading it back. Beats reading
+ * environment variables and hoping.
+ */
+export async function testStorageAction(_prev: ActionResult, _fd: FormData): Promise<ActionResult> {
+  try {
+    await assertCommissioner();
+    const report = storageReport();
+    const stamp = `probe-${Date.now()}`;
+
+    const previous = (await readLeague()).settings.description;
+    await mutateLeague((l) => {
+      l.settings.description = stamp;
+    });
+    const readBack = (await readLeague()).settings.description;
+    await mutateLeague((l) => {
+      l.settings.description = previous;
+    });
+
+    if (readBack !== stamp) {
+      return {
+        ok: false,
+        message: `Wrote a test value but read back something else. Driver: ${report.driver}.`,
+      };
+    }
+
+    refresh();
+    return {
+      ok: true,
+      message:
+        report.driver === "vercel-blob"
+          ? `Storage is working. Saving to Vercel Blob via ${report.tokenVariable}.`
+          : `Storage is working, using the ${report.driver}. On Vercel this will not persist.`,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    const report = storageReport();
+    return {
+      ok: false,
+      message:
+        `Write failed (driver: ${report.driver}). ` +
+        `BLOB env vars visible: ${report.blobEnvVarsSeen.length ? report.blobEnvVarsSeen.join(", ") : "none"}. ` +
+        `Error: ${message}`,
+    };
+  }
+}
 
 export async function storageWarning(): Promise<boolean> {
   return storageIsEphemeral();

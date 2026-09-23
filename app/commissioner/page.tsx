@@ -9,6 +9,9 @@ import {
   weekByNumber,
 } from "@/lib/stats";
 import { Crest } from "@/components/ui";
+import { storageReport } from "@/lib/storage";
+import { ActionForm, FormStatus, SubmitBtn } from "@/components/admin/form-kit";
+import { testStorageAction } from "@/lib/actions";
 
 export const metadata = { title: "Commissioner" };
 
@@ -89,6 +92,9 @@ export default async function CommissionerDashboard() {
           playoff seeds all follow from them.
         </p>
       </div>
+
+      {/* ------------------------------------------------------- storage */}
+      <StoragePanel />
 
       {/* --------------------------------------------------------- headline */}
       <div className="panel grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-line">
@@ -262,6 +268,68 @@ export default async function CommissionerDashboard() {
         {league.players.length} bowlers · {league.teams.length} teams · {weeks.length} weeks ·{" "}
         {playerStats.filter((s) => s.games > 0).length} bowlers with recorded games
       </p>
+    </div>
+  );
+}
+
+/**
+ * What this deployment can actually see and do, plus a button that proves it by
+ * writing and reading back. Only shown when something is off, or on Vercel
+ * where the answer is not obvious.
+ */
+function StoragePanel() {
+  const r = storageReport();
+  const healthy = r.driver === "vercel-blob" || !r.onVercel;
+  if (healthy && !r.onVercel) return null;
+
+  return (
+    <section className={`panel p-4 ${healthy ? "" : "border-loss/50 bg-loss/[0.06]"}`}>
+      <div className={`overline ${healthy ? "text-win" : "text-loss"}`}>
+        {healthy ? "Storage connected" : "Storage not connected"}
+      </div>
+      <dl className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-[0.84rem]">
+        <Row
+          label="Running on"
+          value={r.onVercel ? `Vercel (${r.vercelEnv ?? "unknown"})` : "this machine"}
+        />
+        <Row
+          label="Saving to"
+          value={r.driver === "vercel-blob" ? "Vercel Blob" : "local filesystem"}
+        />
+        <Row label="Blob token" value={r.tokenVariable ?? "not found"} />
+        <Row
+          label="BLOB variables visible"
+          value={r.blobEnvVarsSeen.length ? r.blobEnvVarsSeen.join(", ") : "none"}
+        />
+      </dl>
+
+      {!healthy ? (
+        <p className="hint mt-3 max-w-3xl">
+          The Blob store is either not created, not connected to this project, or was connected
+          after the last deploy. In Vercel: <strong>Storage</strong> &rarr; create a{" "}
+          <strong>Blob</strong> store &rarr; open it &rarr; <strong>Connect to Project</strong>{" "}
+          &rarr; pick this project &rarr; then <strong>Redeploy</strong>. Connecting alone is not
+          enough; the running deployment only picks up the variable on a new build.
+        </p>
+      ) : null}
+
+      <div className="mt-3">
+        <ActionForm action={testStorageAction}>
+          <SubmitBtn className="btn" pendingLabel="Testing…">
+            Test saving
+          </SubmitBtn>
+          <FormStatus />
+        </ActionForm>
+      </div>
+    </section>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex gap-2 min-w-0">
+      <dt className="text-muted-2 flex-none">{label}:</dt>
+      <dd className="num truncate">{value}</dd>
     </div>
   );
 }

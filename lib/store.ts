@@ -16,18 +16,26 @@ let writeChain: Promise<unknown> = Promise.resolve();
  */
 let seeding: Promise<League> | null = null;
 
+/**
+ * A production build has no request to exchange for an OIDC identity, and must
+ * never write anything anyway. Every route here is rendered on demand, so
+ * prerendering only needs a shell — serve the seed and touch no storage.
+ */
+function isBuildPhase(): boolean {
+  return process.env.NEXT_PHASE === "phase-production-build";
+}
+
 export async function readLeague(): Promise<League> {
-  let raw: string | null;
-  try {
-    raw = await storage().readDoc();
-  } catch (error) {
-    // A production build has no request to exchange for an OIDC identity, so a
-    // Blob read can fail there even though it works at runtime. Every route is
-    // rendered on demand anyway, so prerendering only needs a shell — fall back
-    // to the seed rather than failing the build.
-    if (process.env.NEXT_PHASE === "phase-production-build") return buildSeedLeague();
-    throw error;
+  if (isBuildPhase()) {
+    try {
+      const raw = await storage().readDoc();
+      return raw ? (JSON.parse(raw) as League) : buildSeedLeague();
+    } catch {
+      return buildSeedLeague();
+    }
   }
+
+  const raw = await storage().readDoc();
   if (raw) return JSON.parse(raw) as League;
 
   if (!seeding) {

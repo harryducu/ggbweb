@@ -100,9 +100,22 @@ async function withBlobContext<T>(what: string, run: () => Promise<T>): Promise<
     return await run();
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
+
+    // A private store can't serve team logos and player photos to a browser,
+    // which is the whole point of storing them. Access mode is fixed when the
+    // store is created, so the fix is a new store, not a setting.
+    if (/private store|private access/i.test(detail)) {
+      throw new Error(
+        "This project is connected to a PRIVATE Vercel Blob store, which can't serve " +
+          "images to a browser. A store's access mode can't be changed after it's created. " +
+          "In Vercel: Storage → Create → Blob → choose PUBLIC access, connect it to this " +
+          "project, disconnect the private one, then redeploy.",
+      );
+    }
+
     throw new Error(
       `Could not ${what} from Vercel Blob (${detail}). Check that a Blob store is ` +
-        `still connected to this project and redeploy. Token variable: ${blobTokenName() ?? "none"}.`,
+        `still connected to this project and redeploy. Auth: ${blobTokenName() ?? "OIDC"}.`,
     );
   }
 }

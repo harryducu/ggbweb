@@ -296,7 +296,7 @@ function StoragePanel() {
           label="Saving to"
           value={r.driver === "vercel-blob" ? "Vercel Blob" : "local filesystem"}
         />
-        <Row label="Blob token" value={r.tokenVariable ?? "not found"} />
+        <Row label="Authenticating via" value={r.auth} />
         <Row
           label="BLOB variables visible"
           value={r.blobEnvVarsSeen.length ? r.blobEnvVarsSeen.join(", ") : "none"}

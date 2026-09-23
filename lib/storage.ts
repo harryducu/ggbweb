@@ -78,10 +78,17 @@ const filesystemDriver: StorageDriver = {
 const DOC_KEY = "league/league.json";
 
 /**
- * Vercel injects BLOB_READ_WRITE_TOKEN when a Blob store is connected, but a
- * store created with a custom environment-variable prefix produces something
- * like MYSTORE_BLOB_READ_WRITE_TOKEN instead. Accept either, and pass the token
- * explicitly rather than relying on the SDK picking it up.
+ * Two ways a connected Blob store authenticates:
+ *
+ * - OIDC, which is the current default on Vercel. The store contributes
+ *   BLOB_STORE_ID and the SDK exchanges the deployment's OIDC identity for
+ *   access. No long-lived secret exists, and none is needed.
+ * - A static BLOB_READ_WRITE_TOKEN, still used for older stores and required
+ *   anywhere outside Vercel. A store created with a custom variable prefix
+ *   exports PREFIX_BLOB_READ_WRITE_TOKEN, so match on the suffix.
+ *
+ * OIDC takes precedence in the SDK when both are present, so the token is only
+ * passed when we actually have one.
  */
 /**
  * Turns an SDK failure into something a commissioner can act on. A wrong or
@@ -108,6 +115,17 @@ export function blobToken(): string | undefined {
   return key ? process.env[key] : undefined;
 }
 
+/** A Blob store is reachable if either auth route is available. */
+export function blobConfigured(): boolean {
+  return Boolean(blobToken() || process.env.BLOB_STORE_ID);
+}
+
+/** Only pass a token when one exists; otherwise let the SDK use OIDC. */
+function blobAuth(): { token?: string } {
+  const token = blobToken();
+  return token ? { token } : {};
+}
+
 /** Name of the variable the token was found under, for the diagnostics panel. */
 export function blobTokenName(): string | null {
   if (process.env.BLOB_READ_WRITE_TOKEN) return "BLOB_READ_WRITE_TOKEN";
@@ -124,7 +142,7 @@ function blobDriver(): StorageDriver {
     async readDoc() {
       const { list } = await import("@vercel/blob");
       const { blobs } = await withBlobContext("read the league data", () =>
-        list({ prefix: DOC_KEY, limit: 1, token: blobToken() }),
+        list({ prefix: DOC_KEY, limit: 1, ...blobAuth() }),
       );
       const found = blobs.find((b) => b.pathname === DOC_KEY);
       if (!found) return null;
@@ -139,7 +157,7 @@ function blobDriver(): StorageDriver {
       const { put } = await import("@vercel/blob");
       await withBlobContext("save the league data", () =>
         put(DOC_KEY, json, {
-          token: blobToken(),
+          ...blobAuth(),
           access: "public",
           contentType: "application/json",
           addRandomSuffix: false,
@@ -152,7 +170,7 @@ function blobDriver(): StorageDriver {
     async putImage(folder, filename, bytes, contentType) {
       const { put } = await import("@vercel/blob");
       const { url } = await put(`uploads/${folder}/${filename}`, bytes, {
-        token: blobToken(),
+        ...blobAuth(),
         access: "public",
         contentType,
         addRandomSuffix: false,
@@ -165,7 +183,7 @@ function blobDriver(): StorageDriver {
       if (!ref.startsWith("http")) return;
       try {
         const { del } = await import("@vercel/blob");
-        await del(ref, { token: blobToken() });
+        await del(ref, { ...blobAuth() });
       } catch {
         // Already gone, or the token no longer has access.
       }
@@ -179,14 +197,14 @@ let cached: StorageDriver | null = null;
 
 export function storage(): StorageDriver {
   if (!cached) {
-    cached = blobToken() ? blobDriver() : filesystemDriver;
+    cached = blobConfigured() ? blobDriver() : filesystemDriver;
   }
   return cached;
 }
 
 /** True when writes cannot possibly persist — used to warn in the admin panel. */
 export function storageIsEphemeral(): boolean {
-  return Boolean(process.env.VERCEL) && !blobToken();
+  return Boolean(process.env.VERCEL) && !blobConfigured();
 }
 
 /** What the running deployment can actually see, for the diagnostics panel. */
@@ -194,6 +212,11 @@ export function storageReport() {
   return {
     onVercel: Boolean(process.env.VERCEL),
     driver: storage().name,
+    auth: blobToken()
+      ? `static token (${blobTokenName()})`
+      : process.env.BLOB_STORE_ID
+        ? "OIDC via BLOB_STORE_ID"
+        : "none",
     tokenVariable: blobTokenName(),
     blobEnvVarsSeen: Object.keys(process.env)
       .filter((k) => k.includes("BLOB"))

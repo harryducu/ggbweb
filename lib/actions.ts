@@ -793,7 +793,7 @@ export async function testStorageAction(_prev: ActionResult, _fd: FormData): Pro
       ok: true,
       message:
         report.driver === "vercel-blob"
-          ? `Storage is working. Saving to Vercel Blob via ${report.tokenVariable}.`
+          ? `Storage is working. Saving to Vercel Blob, authenticating via ${report.auth}.`
           : `Storage is working, using the ${report.driver}. On Vercel this will not persist.`,
     };
   } catch (error) {

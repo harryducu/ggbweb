@@ -297,11 +297,20 @@ function StoragePanel() {
           value={r.driver === "vercel-blob" ? "Vercel Blob" : "local filesystem"}
         />
         <Row label="Authenticating via" value={r.auth} />
+        <Row label="Store access" value={r.access} />
         <Row
           label="BLOB variables visible"
           value={r.blobEnvVarsSeen.length ? r.blobEnvVarsSeen.join(", ") : "none"}
         />
       </dl>
+
+      {r.access === "private" ? (
+        <p className="hint mt-2 max-w-3xl">
+          This is a private Blob store, so uploaded logos and photos are streamed through{" "}
+          <code className="text-muted">/api/blob/…</code> rather than linked directly. That works,
+          but a public store serves images faster and cheaper if you ever make a new one.
+        </p>
+      ) : null}
 
       {!healthy ? (
         <p className="hint mt-3 max-w-3xl">

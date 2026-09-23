@@ -85,11 +85,12 @@ async function guard(fn: () => Promise<string>): Promise<ActionResult> {
     const message = error instanceof Error ? error.message : "Something went wrong.";
     // A read-only filesystem means this is deployed somewhere that can't store
     // the league file. Say so, instead of surfacing a raw EROFS.
-    if (/EROFS|read-only file system|ENOENT.*data\/league\.json/i.test(message)) {
+    if (/EROFS|read-only file system/i.test(message)) {
       return {
         ok: false,
         message:
-          "Nothing was saved: this deployment has no writable storage. Create a Vercel Blob store and redeploy — see the banner at the top of this page.",
+          "Nothing was saved: this deployment has no writable storage. Connect a Vercel Blob " +
+          "store to the project and redeploy — see the panel on the Dashboard.",
       };
     }
     return { ok: false, message };

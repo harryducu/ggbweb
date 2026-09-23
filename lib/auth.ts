@@ -4,16 +4,31 @@ import { cookies } from "next/headers";
 const COOKIE = "gg_commish";
 const MAX_AGE_SECONDS = 60 * 60 * 12;
 
-function secret(): string {
-  return process.env.SESSION_SECRET || "dev-only-insecure-secret";
+/**
+ * No fallbacks, deliberately. A default password or signing key baked into the
+ * source is readable by anyone with the repository, so a missing variable locks
+ * the panel rather than leaving it open with a known credential.
+ */
+function secret(): string | null {
+  return process.env.SESSION_SECRET || null;
 }
 
-function password(): string {
-  return process.env.COMMISSIONER_PASSWORD || "strike300";
+function password(): string | null {
+  return process.env.COMMISSIONER_PASSWORD || null;
+}
+
+/** Whether the deployment is configured well enough to allow a sign-in. */
+export function authConfigured(): { ok: boolean; missing: string[] } {
+  const missing: string[] = [];
+  if (!password()) missing.push("COMMISSIONER_PASSWORD");
+  if (!secret()) missing.push("SESSION_SECRET");
+  return { ok: missing.length === 0, missing };
 }
 
 function sign(payload: string): string {
-  return createHmac("sha256", secret()).update(payload).digest("hex");
+  const key = secret();
+  if (!key) throw new Error("SESSION_SECRET is not set.");
+  return createHmac("sha256", key).update(payload).digest("hex");
 }
 
 function safeEqual(a: string, b: string): boolean {
@@ -23,7 +38,9 @@ function safeEqual(a: string, b: string): boolean {
 }
 
 export function checkPassword(candidate: string): boolean {
-  return safeEqual(candidate, password());
+  const expected = password();
+  if (!expected) return false;
+  return safeEqual(candidate, expected);
 }
 
 /** Cookie value is `expiresAt.signature`, so it can't be forged or replayed past expiry. */
@@ -46,6 +63,7 @@ export async function destroySession(): Promise<void> {
 }
 
 export async function isCommissioner(): Promise<boolean> {
+  if (!authConfigured().ok) return false;
   const jar = await cookies();
   const raw = jar.get(COOKIE)?.value;
   if (!raw) return false;

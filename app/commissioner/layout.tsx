@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { isCommissioner } from "@/lib/auth";
+import { authConfigured, isCommissioner } from "@/lib/auth";
 import { readLeague } from "@/lib/store";
 import { storageIsEphemeral } from "@/lib/storage";
 import { signOutAction } from "@/lib/actions";
@@ -14,7 +14,13 @@ export default async function CommissionerLayout({ children }: { children: React
   // One gate for every /commissioner route. Server actions re-check the session
   // independently, so a stale page can't be used to write data.
   if (!(await isCommissioner())) {
-    return <CommissionerLogin logo={league.settings.logo} leagueName={league.settings.name} />;
+    return (
+      <CommissionerLogin
+        logo={league.settings.logo}
+        leagueName={league.settings.name}
+        missing={authConfigured().missing}
+      />
+    );
   }
 
   return (

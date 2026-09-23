@@ -23,9 +23,13 @@ npm run typecheck            # tsc, no emit
 
 ## The commissioner panel
 
-`/commissioner`, password from `.env.local` (`COMMISSIONER_PASSWORD`, currently
-`strike300` — **change it**). Sessions last 12 hours and the cookie is signed with
-`SESSION_SECRET`.
+`/commissioner`, password from `COMMISSIONER_PASSWORD`. Sessions last 12 hours and the
+cookie is signed with `SESSION_SECRET`.
+
+Both are required — there are no built-in defaults. If either is missing the panel
+refuses every sign-in and says which variable is unset, rather than falling back to a
+credential that anyone reading this repository would know. Set them in `.env.local`
+locally and in the host's environment settings in production.
 
 | Section | What it does |
 | --- | --- |

@@ -6,9 +6,12 @@ import { signInAction } from "@/lib/actions";
 export function CommissionerLogin({
   logo,
   leagueName,
+  missing = [],
 }: {
   logo: string | null;
   leagueName: string;
+  /** Required environment variables this deployment is missing. */
+  missing?: string[];
 }) {
   return (
     <div className="wrap py-14 md:py-20">
@@ -29,6 +32,23 @@ export function CommissionerLogin({
             {leagueName} admin. Scores, rankings and rosters are edited here.
           </p>
         </div>
+
+        {missing.length > 0 ? (
+          <div role="alert" className="panel mt-7 p-4 border-loss/50 bg-loss/[0.08]">
+            <div className="overline text-loss">Sign-in is disabled</div>
+            <p className="hint mt-1.5">
+              This deployment is missing {missing.join(" and ")}. Rather than fall back to a
+              built-in password, which anyone reading the source would know, the panel refuses every
+              sign-in until {missing.length === 1 ? "it is" : "they are"} set.
+            </p>
+            <p className="hint mt-2">
+              Set {missing.length === 1 ? "it" : "them"} in the host&apos;s environment settings (on
+              Vercel: Settings &rarr; Environment Variables), then redeploy. Locally, put{" "}
+              {missing.length === 1 ? "it" : "them"} in{" "}
+              <code className="text-muted">.env.local</code>.
+            </p>
+          </div>
+        ) : null}
 
         <div className="panel mt-7 p-5">
           <ActionForm action={signInAction}>
@@ -52,8 +72,7 @@ export function CommissionerLogin({
         </div>
 
         <p className="hint text-center mt-4">
-          The password lives in <span className="text-muted">.env.local</span> as
-          COMMISSIONER_PASSWORD. Change it before the site goes public.
+          Access is set by the COMMISSIONER_PASSWORD environment variable.
         </p>
       </div>
     </div>

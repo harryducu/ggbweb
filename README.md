@@ -78,72 +78,101 @@ records, that the bracket resolves, and that the store round-trips a write.
 
 ## Notes on the data
 
-Loaded from `BOWLING_LEAGUE_REAL.xlsx` — all 28 bowlers, their season totals, and
-the seven team records after week 2. Current week is 3.
+Loaded from `BOWLING_LEAGUE_REAL.xlsx` — all 28 bowlers, their season totals, and the
+seven team records after week 2. Current week is 3. Verified cell by cell against the
+workbook: every team record, every player stat, and both bowled weeks match exactly.
 
 **Rosters were reconstructed, not supplied.** The workbook has no player-to-team
-column, so each team's roster was solved from its Total Score: the twenty bowlers
-with six games played partition into the five teams that bowled both weeks with
-exact sums, and the eight with three games split into the two teams that have had
-a bye. Five of the seven rosters come out uniquely determined; the Osama Pin Laden
-/ Goop Troop split was confirmed by the commissioner. **Worth a once-over** on the
-Teams page — it is the one part of the data that is inferred rather than read.
+column, so each roster was solved from its team's Total Score: the twenty bowlers with
+six games played partition into the five teams that bowled both weeks with exact sums,
+and the eight with three games split into the two teams that had a bye. Five of the
+seven rosters came out uniquely determined; the Osama Pin Laden / Goop Troop split was
+confirmed by the commissioner. **This is the one inferred part of the data** — worth a
+once-over on the Teams page.
 
-**Standings are ranked by win percentage**, matching the workbook's own Standings
-sheet. Points would be wrong here: byes leave teams on different game counts, so a
-3-3 team would outrank a 2-1 team. The Points column is still shown, just not used
-for ordering.
+**Standings rank by win percentage**, matching the workbook's own Standings sheet.
+Points would be wrong here: byes leave teams on different game counts, so a 3-3 team
+would outrank a 2-1 team. The Points column is still shown, just not used for ordering.
 
-Season totals are stored as manual overrides, because the workbook records totals
-only — there are no game-by-game scores to derive them from. Enter game scores
-under Enter Scores and the derived values take over; clear the overrides in Teams
-and Stats when you no longer need them.
+Season totals are stored as carry-over baselines, because the workbook records totals
+only — there are no game-by-game scores to derive them from.
 
-Two discrepancies in the source workbook, left as-is rather than papered over:
+### The schedule was corrected
 
-- **Pocket Pounders** posts 1434 pins, but its four bowlers sum to 1404 — a 30-pin
-  gap. The team total is shown as the workbook states it.
-- **Week 5 repeated two pairings** in the original sheet (2F1T met Pocket Pounders
-  twice and Goop Troop met Osama twice on the same night). That was forced by the
-  other weeks rather than a typo in week 5, so six matchups across weeks 3, 5 and
-  7 were swapped to clear it. Byes are unchanged, weeks 1 and 2 are exactly as
-  bowled, and all 21 pairings still meet three times.
+The original sheet left week 5 with two repeated pairings: 2 Fingers met Pocket
+Pounders twice and Goop Troop met Osama twice on the same night. That was not a typo in
+week 5 — with every pairing required to meet exactly three times, the other six weeks
+consumed the rest of the fixtures and left week 5 no other option.
 
-Still to add: team logos and player photos. Until then teams show a colour plate
-or short code and players show their initials, both by design.
+Six matchups across weeks 3, 5 and 7 were swapped to clear it. Weeks 4 and 6 kept their
+fixtures, weeks 1 and 2 were untouched, and byes stayed on the same nights. Audited
+afterwards on both the local copy and the live site: all 7 weeks have 9 games in 3
+rounds of 3, every team faces three different opponents every night, every team byes
+once and plays 18 games, and all 21 pairings meet exactly 3 times.
+
+Team crests are cropped from the league's power-rankings graphic and bundled in
+`public/brand/teams/`. A stored league picks them up on read, and only for a team that
+has no logo, so an upload through the panel is never overwritten.
+
+One discrepancy in the source workbook is left as-is: **Pocket Pounders** posts 1434
+pins while its four bowlers sum to 1404. The team total is shown as the workbook states
+it.
+
+Still to add: player photos. Until then bowlers show their initials, by design.
 
 ## Deploying to Vercel
 
-The commissioner panel **cannot save** on Vercel until you add storage. Vercel gives each
-request a read-only filesystem, so writing `data/league.json` throws, and anything that did
-get written would be thrown away on the next deploy. The admin panel detects this and shows
-a red banner explaining it.
+Live at https://ggbweb-pi.vercel.app, deployed from `main` on every push.
 
-To fix it, once:
+Vercel gives each request a read-only filesystem, so the league file cannot live on
+disk there — every commissioner save would fail, and anything written would vanish on
+the next deploy. Storage therefore sits behind `lib/storage.ts`: the filesystem
+locally, Vercel Blob in production.
 
-1. Vercel dashboard → your project → **Storage** → **Create** → **Blob**.
-2. Connect the store to the project.
-3. Redeploy.
+To set up a fresh deployment:
 
-That injects `BLOB_READ_WRITE_TOKEN`, which is the only signal the app needs — it switches
-to Blob storage automatically, for both the league document and uploaded photos and logos.
-On first load it seeds the store from the workbook data baked into `lib/seed.ts`.
+1. **Storage** → **Create Database** → **Blob**, then **Connect to Project**.
+2. Set `COMMISSIONER_PASSWORD` and `SESSION_SECRET` under **Settings → Environment
+   Variables**. There are no defaults; a missing variable disables sign-in entirely.
+3. Redeploy. Environment variables only reach a new build.
 
-Also set `COMMISSIONER_PASSWORD` and `SESSION_SECRET` as environment variables in Vercel;
-`.env.local` is not deployed.
+The Dashboard shows a storage panel with what the running deployment can actually
+see — platform, driver, how it is authenticating, the store's access mode — plus a
+**Test saving** button that writes a value and reads it back.
 
-Note that once Blob is live, production data lives in Blob, not in the repo's
-`data/league.json`. Editing that file locally will not change the deployed site.
+### Things that are easy to get wrong here
+
+- **Blob no longer uses a static token.** A connected store contributes
+  `BLOB_STORE_ID`, and Vercel injects a short-lived, auto-rotating
+  `VERCEL_OIDC_TOKEN` that the SDK pairs with it. `BLOB_READ_WRITE_TOKEN` only exists
+  for older stores and for code running off-platform. Either is accepted.
+- **A store's access mode is fixed at creation.** This one is private, so uploaded
+  crests and photos are streamed back out through `/api/blob/...` rather than linked
+  directly — a private blob URL is not fetchable by a browser. That route is
+  deliberately unauthenticated, since these are a public league's images, and is
+  limited to the `uploads/` prefix so the league document cannot be pulled through it.
+- **Production data lives in Blob, not in the repo.** Editing `data/league.json`
+  locally does not change the deployed site, and vice versa. They are separate
+  leagues.
+- **Never run a plain `next build` while a dev server is running** — they share
+  `.next` and the build leaves the dev server serving 500s. Use
+  `NEXT_DIST_DIR=.next-build npm run build`.
 
 ## How season totals accumulate
 
-Each bowler and team carries a set of season totals from the spreadsheet, tagged with the
-week they run **through** (week 2). Scores entered for any later week are **added on top** —
-so entering week 3 moves the averages, records and pin totals rather than being ignored.
-You never have to re-enter the carried-over numbers.
+Each bowler and team carries season totals from the spreadsheet, tagged with the week
+they run **through** (week 2). Scores entered for any later week are **added on top**, so
+entering week 3 moves the averages, records and pin totals rather than being ignored.
+The carried-over numbers never need re-entering.
 
 Clear a bowler's or team's carried-over values to calculate them purely from entered game
 scores instead. A blank box always means "calculate it".
+
+**Backfilling weeks 1-2 needs one thing first.** Scores entered for a week at or before
+the carry-through week are deliberately ignored, so typing week 1 and 2 results in today
+would change nothing. Doing that properly means exposing a "totals carry through week N"
+control so it can be set to zero, which does not exist yet. Until then, start at week 3;
+every number already on the site is correct without the earlier detail.
 
 ## Testing
 

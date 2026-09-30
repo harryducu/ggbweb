@@ -6,6 +6,7 @@ import {
   computeStandings,
   fmtDate,
   fmtInt,
+  fmtRecord,
   findTeam,
   lastPlayedWeek,
   nextUnplayedWeek,
@@ -24,6 +25,8 @@ import { Crest, SectionHead } from "@/components/ui";
 export default async function HomePage() {
   const league = await readLeague();
   const standings = computeStandings(league);
+  // Season record shown beside every team name on the week panels.
+  const records = new Map(standings.map((s) => [s.team.id, fmtRecord(s)]));
   const power = computePowerRankings(league);
   const playerStats = computePlayerStats(league);
   const leaders = topBowlers(playerStats, 5, "total");
@@ -90,36 +93,48 @@ export default async function HomePage() {
               </div>
               {lastWeekPlayed ? (
                 <>
-                  {/* Night record first — the fastest read of who had a good
-                      Monday — then every individual game underneath. */}
-                  <div className="flex items-center gap-2 px-3 py-1 bg-ink-2 border-b border-line">
-                    <span className="overline">Team</span>
-                    <span className="flex-1" />
-                    <span className="overline w-14 text-right">W–L</span>
-                    <span className="overline w-16 text-right">Pins</span>
-                  </div>
-                  {lastWeekTeams.map((night) => (
-                    <NightLine
-                      key={night.team?.id ?? night.week.id}
-                      team={night.team}
-                      wins={night.wins}
-                      losses={night.losses}
-                      ties={night.ties}
-                      pins={night.pins}
-                    />
-                  ))}
+                  {/* Every game of the night, each one a tap away from its box
+                      score. The team-by-team read sits underneath, folded away
+                      so the games stay the headline. */}
+                  <GameGroups groups={lastWeekGames} dense records={records} />
+                  <details className="border-t border-line group">
+                    <summary className="px-3 py-2 cursor-pointer select-none flex items-center gap-2 hover:bg-white/[0.03] transition-colors">
+                      <span className="section-link">How each team&apos;s night went</span>
+                      <span className="text-muted-2 text-[0.7rem] group-open:rotate-90 transition-transform">
+                        ▶
+                      </span>
+                    </summary>
+                    <div className="border-t border-line">
+                      <div className="flex items-center gap-2 px-3 py-1 bg-ink-2 border-b border-line">
+                        <span className="overline">Team</span>
+                        <span className="flex-1" />
+                        <span className="overline w-14 text-right">W–L</span>
+                        <span className="overline w-16 text-right">Pins</span>
+                      </div>
+                      {lastWeekTeams.map((night) => (
+                        <NightLine
+                          key={night.team?.id ?? night.week.id}
+                          team={night.team}
+                          wins={night.wins}
+                          losses={night.losses}
+                          ties={night.ties}
+                          pins={night.pins}
+                        />
+                      ))}
+                    </div>
+                  </details>
                   <div className="px-3 py-2 border-t border-line">
                     <Link
                       href={`/schedule#week-${previousWeek?.weekNumber}`}
                       className="section-link"
                     >
-                      All {lastWeekGames.reduce((n, g) => n + g.matchups.length, 0)} game results →
+                      Week {previousWeek?.weekNumber} on the schedule →
                     </Link>
                   </div>
                 </>
               ) : lastWeekAwaitingScores ? (
                 <>
-                  <GameGroups groups={lastWeekGames} dense />
+                  <GameGroups groups={lastWeekGames} dense records={records} />
                   <p className="px-3 py-2 border-t border-line hint">
                     This week was bowled, but game-by-game scores haven&apos;t been entered. Records
                     and averages in the{" "}
@@ -153,7 +168,7 @@ export default async function HomePage() {
                   {thisWeekGames.reduce((n, g) => n + g.matchups.length, 0)} games
                 </span>
               </div>
-              <GameGroups groups={thisWeekGames} dense />
+              <GameGroups groups={thisWeekGames} dense records={records} />
               <div className="px-3 py-2 border-t border-line">
                 <Link href="/schedule" className="section-link">
                   Full season schedule →

@@ -1,16 +1,18 @@
 import Link from "next/link";
 import { readLeague } from "@/lib/store";
 import {
+  computeStandings,
   fmtAvg,
   fmtDate,
   fmtInt,
+  fmtRecord,
   findTeam,
   weekGames,
   weekState,
   weekTeamSummaries,
   type WeekState,
 } from "@/lib/stats";
-import { GameResult, NightLine } from "@/components/match-blocks";
+import { GameResult, NightLine, type TeamRecords } from "@/components/match-blocks";
 import { Crest, PageTitle } from "@/components/ui";
 import type { League, Week } from "@/lib/types";
 
@@ -19,6 +21,10 @@ export const metadata = { title: "Schedule" };
 export default async function SchedulePage() {
   const league = await readLeague();
   const weeks = [...league.weeks].sort((a, b) => a.weekNumber - b.weekNumber);
+  // Season record beside each team name, same as the home page.
+  const records: TeamRecords = new Map(
+    computeStandings(league).map((s) => [s.team.id, fmtRecord(s)]),
+  );
 
   return (
     <div className="wrap">
@@ -55,7 +61,7 @@ export default async function SchedulePage() {
 
       <div className="py-6 md:py-8 space-y-7">
         {weeks.map((week) => (
-          <WeekBlock key={week.id} league={league} week={week} />
+          <WeekBlock key={week.id} league={league} week={week} records={records} />
         ))}
       </div>
     </div>
@@ -69,7 +75,15 @@ const STATE_LABEL: Record<WeekState, string> = {
   upcoming: "Upcoming",
 };
 
-function WeekBlock({ league, week }: { league: League; week: Week }) {
+function WeekBlock({
+  league,
+  week,
+  records,
+}: {
+  league: League;
+  week: Week;
+  records: TeamRecords;
+}) {
   const state = weekState(league, week);
   const groups = weekGames(league, week);
   const summaries = weekTeamSummaries(league, week);
@@ -139,7 +153,7 @@ function WeekBlock({ league, week }: { league: League; week: Week }) {
               </span>
             </div>
             {group.matchups.map((r) => (
-              <GameResult key={r.matchup.id} r={r} dense />
+              <GameResult key={r.matchup.id} r={r} dense records={records} />
             ))}
           </div>
         ))}

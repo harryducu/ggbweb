@@ -17,6 +17,7 @@ export const PUBLIC_ROUTES = [
   "/rules",
   "/teams/back-alley-bowljobs",
   "/teams/sunday-guys",
+  "/games/w3g1m1",
   "/players/charlie-dixon",
   "/players/matthew-kurc",
   "/nope-404",

@@ -235,25 +235,31 @@ export default async function TeamProfile({ params }: { params: Promise<{ id: st
                             {g.opponent?.name ?? "TBD"}
                           </span>
                         </Link>
-                        <span className="flex-none num text-[0.85rem] w-20 text-right">
-                          {g.played ? (
-                            <>
-                              <span className={g.result === "W" ? "text-cream font-semibold" : ""}>
-                                {g.score}
-                              </span>
-                              <span className="text-muted-2 mx-1">–</span>
-                              <span
-                                className={
-                                  g.result === "L" ? "text-cream font-semibold" : "text-muted-2"
-                                }
-                              >
-                                {g.opponentScore}
-                              </span>
-                            </>
-                          ) : (
-                            <span className="text-muted-2">—</span>
-                          )}
-                        </span>
+                        {/* A bowled game opens its box score; an unplayed one
+                            has nothing to show yet. */}
+                        {g.played ? (
+                          <Link
+                            href={`/games/${g.id}`}
+                            title="Box score"
+                            className="flex-none num text-[0.85rem] w-20 text-right hover:text-cream transition-colors"
+                          >
+                            <span className={g.result === "W" ? "text-cream font-semibold" : ""}>
+                              {g.score}
+                            </span>
+                            <span className="text-muted-2 mx-1">–</span>
+                            <span
+                              className={
+                                g.result === "L" ? "text-cream font-semibold" : "text-muted-2"
+                              }
+                            >
+                              {g.opponentScore}
+                            </span>
+                          </Link>
+                        ) : (
+                          <span className="flex-none num text-[0.85rem] w-20 text-right text-muted-2">
+                            —
+                          </span>
+                        )}
                       </li>
                     ))}
                   </ul>

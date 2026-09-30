@@ -279,11 +279,7 @@ export function computePlayerStats(league: League): PlayerStats[] {
     // A posted average is only honoured as a flat override; with a baseline
     // week it must be recomputed so later games actually move it.
     const average =
-      m?.average != null && through === null
-        ? m.average
-        : games > 0
-          ? totalScore / games
-          : null;
+      m?.average != null && through === null ? m.average : games > 0 ? totalScore / games : null;
 
     return {
       player,
@@ -298,7 +294,8 @@ export function computePlayerStats(league: League): PlayerStats[] {
       byWeek,
       averageRank: null,
       manual: Boolean(
-        m && (m.games !== null || m.average !== null || m.totalScore !== null || m.strikes !== null),
+        m &&
+        (m.games !== null || m.average !== null || m.totalScore !== null || m.strikes !== null),
       ),
     };
   });
@@ -388,6 +385,8 @@ export interface TeamNight {
   team: Team | undefined;
   bye: boolean;
   games: Array<{
+    /** Matchup id — the box score for this game lives at /games/<id>. */
+    id: string;
     game: GameNumber;
     opponent: Team | undefined;
     score: number | null;
@@ -412,6 +411,7 @@ export function teamNight(league: League, week: Week, teamId: string): TeamNight
       const score = isTeam1 ? r.team1Score : r.team2Score;
       const opponentScore = isTeam1 ? r.team2Score : r.team1Score;
       return {
+        id: r.matchup.id,
         game: r.matchup.game,
         opponent: isTeam1 ? r.team2 : r.team1,
         score,
@@ -450,6 +450,112 @@ export function weekTeamSummaries(league: League, week: Week): TeamNight[] {
     .map((t) => teamNight(league, week, t.id))
     .filter((n) => !n.bye)
     .sort((a, b) => b.wins - a.wins || b.pins - a.pins);
+}
+
+/* --------------------------------------------------------------- box score */
+
+/** One bowler's line in a single game, with the rest of their night alongside. */
+export interface BoxScoreLine {
+  player: Player;
+  /** Score in this game. Null when it was never entered. */
+  score: number | null;
+  strikes: number | null;
+  /** All three of the player's games that night, in game order. */
+  night: Array<number | null>;
+  nightTotal: number | null;
+}
+
+export interface BoxScoreSide {
+  team: Team | undefined;
+  score: number | null;
+  /** True when the total came from bowler scores rather than a typed-in team total. */
+  fromPlayers: boolean;
+  lines: BoxScoreLine[];
+  result: "W" | "L" | "T" | null;
+}
+
+export interface BoxScore {
+  week: Week;
+  matchup: Matchup;
+  resolved: ResolvedMatchup;
+  side1: BoxScoreSide;
+  side2: BoxScoreSide;
+  /** Highest single score in the game, across both rosters. */
+  highScore: number | null;
+}
+
+/**
+ * Matchup ids are unique across the season, so a game can be addressed on its
+ * own without the week in the URL. The week comes back with it because every
+ * score lives on the week, not the matchup.
+ */
+export function findGame(
+  league: League,
+  matchupId: string,
+): { week: Week; matchup: Matchup } | undefined {
+  for (const week of [...league.weeks].sort((a, b) => a.weekNumber - b.weekNumber)) {
+    const matchup = week.matchups.find((m) => m.id === matchupId);
+    if (matchup) return { week, matchup };
+  }
+  return undefined;
+}
+
+/**
+ * Everything one game needs to be shown on its own page: who bowled, what they
+ * shot in that game, and how the rest of their night went.
+ */
+export function boxScore(league: League, week: Week, matchup: Matchup): BoxScore {
+  const resolved = resolveMatchup(league, week, matchup);
+
+  const buildSide = (teamId: string, score: number | null): BoxScoreSide => {
+    const lines: BoxScoreLine[] = rosterFor(league, teamId)
+      .map((player) => {
+        const entry = (g: GameNumber) =>
+          week.playerScores.find((s) => s.playerId === player.id && s.game === g);
+        const night = GAMES.map((g) => entry(g)?.score ?? null);
+        const bowled = night.filter((v): v is number => v !== null);
+        return {
+          player,
+          score: entry(matchup.game)?.score ?? null,
+          strikes: entry(matchup.game)?.strikes ?? null,
+          night,
+          nightTotal: bowled.length ? bowled.reduce((a, b) => a + b, 0) : null,
+        };
+      })
+      // Best game first: a box score is read top-down for who carried the team.
+      .sort(
+        (a, b) => (b.score ?? -1) - (a.score ?? -1) || a.player.name.localeCompare(b.player.name),
+      );
+
+    return {
+      team: findTeam(league, teamId),
+      score,
+      fromPlayers: lines.some((l) => l.score !== null),
+      lines,
+      result: !resolved.played
+        ? null
+        : resolved.tie
+          ? "T"
+          : resolved.winnerId === teamId
+            ? "W"
+            : "L",
+    };
+  };
+
+  const side1 = buildSide(matchup.team1Id, resolved.team1Score);
+  const side2 = buildSide(matchup.team2Id, resolved.team2Score);
+  const all = [...side1.lines, ...side2.lines]
+    .map((l) => l.score)
+    .filter((s): s is number => s !== null);
+
+  return {
+    week,
+    matchup,
+    resolved,
+    side1,
+    side2,
+    highScore: all.length ? Math.max(...all) : null,
+  };
 }
 
 /* --------------------------------------------------------- power rankings */

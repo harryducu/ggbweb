@@ -49,6 +49,11 @@ Enter the game scores and everything else follows: standings, points, win %, tot
 team averages, individual averages, the Top 5 leaderboard, form pips, the trend charts and
 the playoff seeding.
 
+Every bowled game also gets its own box score at `/games/<matchup id>`: who bowled, what
+each of them shot in that game, their series for the night and their season average. Any
+game score on the home page, the schedule or a team page opens it. A game with only a
+typed-in team total says so rather than showing an empty table.
+
 Two escape hatches exist for when you only have summary numbers:
 
 - **Team record override** (Teams → a team) sets wins/losses/ties/pins directly.

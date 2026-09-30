@@ -46,8 +46,8 @@ locally and in the host's environment settings in production.
 ### Scores are the only weekly chore
 
 Enter the game scores and everything else follows: standings, points, win %, total pins,
-team averages, individual averages, the Top 5 leaderboard, form pips, the trend charts and
-the playoff seeding.
+team averages, individual averages, the Top 5 leaderboard, form pips, the trend charts,
+the season record printed under every team name on the schedule, and the playoff seeding.
 
 Every bowled game also gets its own box score at `/games/<matchup id>`: who bowled, what
 each of them shot in that game, their series for the night and their season average. Any
@@ -207,3 +207,7 @@ for headings against Barlow for everything else, with tabular figures in every t
 Deliberately avoided: rounded cards, gradient backgrounds, glassmorphism, drop shadows,
 decorative icons and animation. Borders are 1px, radii are 2px, and the tables are dense on
 purpose.
+
+A game row is the tightest thing on the site: two team names, two scores and two records
+inside 343px on a phone. The record sits *under* the name for that reason — put it beside
+the name and the names truncate to "Back…" and "2 Fin…".

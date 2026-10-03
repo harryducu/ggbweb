@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { readLeague } from "@/lib/store";
+import { getLeague } from "@/lib/store";
 import {
   computePlayerStats,
   computePowerRankings,
@@ -23,7 +23,7 @@ import { TopBowlers } from "@/components/top-bowlers";
 import { Crest, SectionHead } from "@/components/ui";
 
 export default async function HomePage() {
-  const league = await readLeague();
+  const league = await getLeague();
   const standings = computeStandings(league);
   // Season record shown beside every team name on the week panels.
   const records = new Map(standings.map((s) => [s.team.id, fmtRecord(s)]));

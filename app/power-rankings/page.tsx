@@ -1,4 +1,4 @@
-import { readLeague } from "@/lib/store";
+import { getLeague } from "@/lib/store";
 import { computePowerRankings } from "@/lib/stats";
 import { PowerRankRow } from "@/components/power-rows";
 import { PageTitle } from "@/components/ui";
@@ -6,7 +6,7 @@ import { PageTitle } from "@/components/ui";
 export const metadata = { title: "Power Rankings" };
 
 export default async function PowerRankingsPage() {
-  const league = await readLeague();
+  const league = await getLeague();
   const rows = computePowerRankings(league);
 
   const movers = rows.filter((r) => r.movement !== 0);

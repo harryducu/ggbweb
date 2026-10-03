@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { readLeague } from "@/lib/store";
+import { getLeague } from "@/lib/store";
 import {
   computePlayerStats,
   computePowerRankings,
@@ -14,7 +14,7 @@ import { Avatar, Crest, PageTitle } from "@/components/ui";
 export const metadata = { title: "Teams" };
 
 export default async function TeamsPage() {
-  const league = await readLeague();
+  const league = await getLeague();
   const standings = computeStandings(league);
   const power = computePowerRankings(league);
   const playerStats = computePlayerStats(league);

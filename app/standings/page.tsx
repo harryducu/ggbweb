@@ -1,4 +1,4 @@
-import { readLeague } from "@/lib/store";
+import { getLeague } from "@/lib/store";
 import { computeStandings, fmtAvg, fmtInt } from "@/lib/stats";
 import { StandingsTable } from "@/components/standings-table";
 import { PageTitle, StatLine, StatRow } from "@/components/ui";
@@ -6,7 +6,7 @@ import { PageTitle, StatLine, StatRow } from "@/components/ui";
 export const metadata = { title: "Standings" };
 
 export default async function StandingsPage() {
-  const league = await readLeague();
+  const league = await getLeague();
   const standings = computeStandings(league);
 
   const played = standings.reduce((n, s) => n + s.games, 0) / 2;

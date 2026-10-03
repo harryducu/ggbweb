@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { readLeague } from "@/lib/store";
+import { getLeague } from "@/lib/store";
 import { computePlayerStats, fmtAvg, fmtInt } from "@/lib/stats";
 import { PlayerCard } from "@/components/player-card";
 import { PageTitle, StatLine, StatRow } from "@/components/ui";
@@ -7,7 +7,7 @@ import { PageTitle, StatLine, StatRow } from "@/components/ui";
 export const metadata = { title: "Players" };
 
 export default async function PlayersPage() {
-  const league = await readLeague();
+  const league = await getLeague();
   const stats = computePlayerStats(league);
 
   // Bowlers with games sort by average; everyone else follows alphabetically so

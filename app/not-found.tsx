@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { readLeague } from "@/lib/store";
+import { getLeague } from "@/lib/store";
 
 export const metadata = { title: "Page not found" };
 
 export default async function NotFound() {
-  const league = await readLeague();
+  const league = await getLeague();
 
   return (
     <div className="wrap py-20 md:py-28 text-center">

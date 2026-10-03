@@ -1,10 +1,10 @@
-import { readLeague } from "@/lib/store";
+import { getLeague } from "@/lib/store";
 import { PageTitle } from "@/components/ui";
 
 export const metadata = { title: "League Rules" };
 
 export default async function RulesPage() {
-  const league = await readLeague();
+  const league = await getLeague();
   const rules = league.settings.rules
     .split("\n")
     .map((r) => r.trim())

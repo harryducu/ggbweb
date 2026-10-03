@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { readLeague } from "@/lib/store";
+import { getLeague } from "@/lib/store";
 import {
   boxScore,
   computePlayerStats,
@@ -18,7 +18,7 @@ import { Avatar, Crest, SectionHead } from "@/components/ui";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const league = await readLeague();
+  const league = await getLeague();
   const found = findGame(league, id);
   if (!found) return { title: "Box score" };
   const { week, matchup } = found;
@@ -33,7 +33,7 @@ const RESULT_LABEL = { W: "Won", L: "Lost", T: "Tied" } as const;
 
 export default async function GameBoxScore({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const league = await readLeague();
+  const league = await getLeague();
 
   const found = findGame(league, id);
   if (!found) notFound();

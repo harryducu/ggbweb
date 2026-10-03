@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { readLeague } from "@/lib/store";
+import { getLeague } from "@/lib/store";
 import { computeStandings, fmtInt, fmtRecord, resolvePlayoffs } from "@/lib/stats";
 import { JoinElbow, JoinStraight, SeriesCard } from "@/components/bracket";
 import { Crest, PageTitle } from "@/components/ui";
@@ -8,7 +8,7 @@ import type { Team } from "@/lib/types";
 export const metadata = { title: "Playoffs" };
 
 export default async function PlayoffsPage() {
-  const league = await readLeague();
+  const league = await getLeague();
   const standings = computeStandings(league);
   const resolved = resolvePlayoffs(league);
   const qualifiers = league.playoffs.qualifiers;

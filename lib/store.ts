@@ -1,3 +1,4 @@
+import { cache } from "react";
 import {
   ASSETS_VERSION,
   BUNDLED_TEAM_LOGOS,
@@ -181,3 +182,11 @@ export async function resetLeague(): Promise<void> {
     league.playoffs = fresh.playoffs;
   });
 }
+
+/**
+ * readLeague, deduplicated within one page render. generateMetadata, the root
+ * layout and the page each need the league, and without this every page view
+ * reads the Blob store three times. Pages use this; server actions keep
+ * calling readLeague so they always see their own writes.
+ */
+export const getLeague = cache(readLeague);

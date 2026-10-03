@@ -3,7 +3,7 @@ import { Barlow, Barlow_Condensed } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { readLeague } from "@/lib/store";
+import { getLeague } from "@/lib/store";
 import { isCommissioner } from "@/lib/auth";
 
 const sans = Barlow({
@@ -22,7 +22,7 @@ const display = Barlow_Condensed({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { settings } = await readLeague();
+  const { settings } = await getLeague();
   return {
     title: {
       default: `${settings.name} — ${settings.season}`,
@@ -38,7 +38,7 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const league = await readLeague();
+  const league = await getLeague();
   const admin = await isCommissioner();
 
   return (

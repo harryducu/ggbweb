@@ -1,4 +1,4 @@
-import { readLeague } from "@/lib/store";
+import { getLeague } from "@/lib/store";
 import { computePlayerStats, fmtAvg, fmtInt } from "@/lib/stats";
 import { StatsTable, type StatsColumn, type StatsRow } from "@/components/stats-table";
 import { PageTitle, StatLine, StatRow } from "@/components/ui";
@@ -6,7 +6,7 @@ import { PageTitle, StatLine, StatRow } from "@/components/ui";
 export const metadata = { title: "Stats" };
 
 export default async function StatsPage() {
-  const league = await readLeague();
+  const league = await getLeague();
   const stats = computePlayerStats(league);
 
   const rows: StatsRow[] = stats.map((s) => ({

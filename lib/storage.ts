@@ -186,12 +186,19 @@ async function putBlob(
 
 /** Reads a blob's text, whichever access mode the store uses. */
 async function readBlobText(key: string): Promise<string | null> {
-  const { get, list } = await import("@vercel/blob");
+  const { get, head, BlobNotFoundError } = await import("@vercel/blob");
 
   if (accessMode !== "private") {
-    const { blobs } = await list({ prefix: key, limit: 1, ...blobAuth() });
-    const found = blobs.find((b) => b.pathname === key);
-    if (!found) return null;
+    // head() is a simple operation; list() is an advanced one, and the Hobby
+    // plan only allows 2,000 of those a month. Calling list() here on every
+    // cold start is what locked the store in October 2026.
+    let found: { url: string };
+    try {
+      found = await head(key, { ...blobAuth() });
+    } catch (error) {
+      if (error instanceof BlobNotFoundError) return null;
+      throw error;
+    }
     // Blob URLs sit behind a CDN, so ask for the origin copy every time or the
     // commissioner can save a change and read back the old one.
     const res = await fetch(`${found.url}?t=${Date.now()}`, { cache: "no-store" });

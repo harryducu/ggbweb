@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { readLeague } from "@/lib/store";
+import { getLeague } from "@/lib/store";
 import {
   computeStandings,
   fmtAvg,
@@ -19,7 +19,7 @@ import type { League, Week } from "@/lib/types";
 export const metadata = { title: "Schedule" };
 
 export default async function SchedulePage() {
-  const league = await readLeague();
+  const league = await getLeague();
   const weeks = [...league.weeks].sort((a, b) => a.weekNumber - b.weekNumber);
   // Season record beside each team name, same as the home page.
   const records: TeamRecords = new Map(

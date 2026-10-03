@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { readLeague } from "@/lib/store";
+import { getLeague } from "@/lib/store";
 import {
   computePlayerStats,
   computeStandings,
@@ -16,14 +16,14 @@ import { TrendChart } from "@/components/trend-chart";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const league = await readLeague();
+  const league = await getLeague();
   const player = league.players.find((p) => p.id === id);
   return { title: player?.name ?? "Player" };
 }
 
 export default async function PlayerProfile({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const league = await readLeague();
+  const league = await getLeague();
   const all = computePlayerStats(league);
   const stats = all.find((s) => s.player.id === id);
   if (!stats) notFound();

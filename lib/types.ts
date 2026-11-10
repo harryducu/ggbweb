@@ -107,7 +107,12 @@ export interface Week {
   notes: string;
 }
 
-export type PlayoffRoundId = "playin" | "semifinal" | "final";
+/**
+ * "tiebreaker" is a one-off game bowled to separate teams level on win
+ * percentage. It sits with the playoffs because it is bowled after the
+ * regular season, but it decides seeding rather than advancing anyone.
+ */
+export type PlayoffRoundId = "tiebreaker" | "playin" | "semifinal" | "final";
 
 export interface PlayoffSeries {
   id: string;
@@ -123,6 +128,12 @@ export interface PlayoffSeries {
   team2Score: number | null;
   /** Manual winner override; otherwise derived from scores. */
   winnerId: string | null;
+  /**
+   * Bowler scores for this series. Kept apart from the weeks on purpose:
+   * postseason games are shown as their own stats and never move a bowler's
+   * season average or totals. Missing on leagues saved before this existed.
+   */
+  playerScores?: PlayerGameScore[];
 }
 
 export interface Playoffs {
@@ -153,6 +164,8 @@ export interface LeagueSettings {
   scheduleVersion?: number;
   /** Which revision of the bundled crests this league is on. */
   assetsVersion?: number;
+  /** Which one-time corrections to stored data have been applied. */
+  dataFixVersion?: number;
   description: string;
   rules: string;
   /** Points awarded in the standings. */

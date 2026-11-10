@@ -22,6 +22,13 @@ from `main` on every push.
 - **The schedule was deliberately changed** from the original sheet. Six matchups across
   weeks 3, 5 and 7 were swapped to remove two repeated pairings in week 5. Weeks 1-2 are
   exactly as bowled. Do not "restore" the spreadsheet version.
+- **The league broke after week 5.** Weeks 1-5 were Sep 14 - Oct 12; week 6 was Nov 2 and
+  week 7 Nov 9. Not every week is seven days after the last.
+- **Standings tiebreak: win %, then a tiebreaker game, then pins.** A tiebreaker is a
+  playoffs series with `round: "tiebreaker"` and `team:` slots. Sunday Guys beat Osama Pin
+  Laden in one for the 6th seed (Nov 2026); it is the `tb-1` series.
+- **Playoff bowler scores live on the series (`series.playerScores`), never on a week**, so
+  they show as playoff stats and never touch season averages or totals. Keep it that way.
 - **The current week is a manual setting** (`settings.currentWeek`). Nothing reads the
   calendar; week dates are display only. Entering scores does not advance it.
 
@@ -29,6 +36,10 @@ from `main` on every push.
 
 - **Never run a plain `next build` while a dev server is running** — they share `.next`
   and the dev server ends up serving 500s. Use `NEXT_DIST_DIR=.next-build npm run build`.
+- **One-time data corrections go in `migrateDataFixes` (lib/store.ts)** behind
+  `DATA_FIX_VERSION`. The live league is copied to `league/backups/` in Blob before any fix
+  runs, and builds apply fixes in memory only. Only change a value that still holds what
+  you are correcting.
 - `LEAGUE_DATA_DIR` points the league file somewhere else — use it to give tests a
   throwaway copy instead of touching real data.
 - **Production data lives in Vercel Blob, not in the repo.** Editing `data/league.json`

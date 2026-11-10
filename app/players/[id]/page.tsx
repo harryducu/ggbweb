@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLeague } from "@/lib/store";
 import {
+  PLAYOFF_ROUND_LABEL,
   computePlayerStats,
+  computePostseasonStats,
   computeStandings,
   fmtAvg,
   fmtDate,
@@ -53,6 +55,7 @@ export default async function PlayerProfile({ params }: { params: Promise<{ id: 
     recentAvg !== null && stats.average !== null ? recentAvg - stats.average : null;
 
   const extraFields = league.settings.playerStatFields;
+  const postseason = computePostseasonStats(league).find((s) => s.player.id === player.id);
 
   return (
     <div className="wrap">
@@ -206,6 +209,52 @@ export default async function PlayerProfile({ params }: { params: Promise<{ id: 
             </div>
           </div>
         </section>
+
+        {/* ====================================================== postseason */}
+        {postseason ? (
+          <section>
+            <SectionHead overline="Postseason" title="Playoff games" />
+            <div className="panel overflow-hidden">
+              <div className="table-scroll">
+                <table className="stat">
+                  <thead>
+                    <tr>
+                      <th className="left">Round</th>
+                      <th className="left">Opponent</th>
+                      <th>G1</th>
+                      <th>G2</th>
+                      <th>G3</th>
+                      <th>Series</th>
+                      <th>X</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {postseason.lines.map((l) => (
+                      <tr key={l.series.id}>
+                        <td className="key left">{PLAYOFF_ROUND_LABEL[l.series.round]}</td>
+                        <td className="left dim">{l.opponent?.name ?? "—"}</td>
+                        {l.scores.map((s, i) => (
+                          <td key={i} className={s === null ? "dim" : ""}>
+                            {s ?? "—"}
+                          </td>
+                        ))}
+                        <td className="num font-semibold text-cream">{fmtInt(l.total)}</td>
+                        <td className="dim">{fmtInt(l.strikes)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="border-t border-line px-3.5 py-2 flex flex-wrap gap-x-5 gap-y-1 text-[0.75rem] text-muted-2">
+                <span className="num">
+                  Playoff average {fmtAvg(postseason.average)} over {postseason.games} game
+                  {postseason.games === 1 ? "" : "s"}
+                </span>
+                <span>Not included in season stats.</span>
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         {/* ======================================================= teammates */}
         {team ? (

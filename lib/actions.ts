@@ -708,6 +708,9 @@ export async function savePlayoffsAction(_prev: ActionResult, fd: FormData): Pro
         Math.min(league.teams.length, int(fd, "qualifiers", league.playoffs.qualifiers)),
       );
       for (const series of league.playoffs.series) {
+        // A series the form never showed keeps what it has, rather than being
+        // blanked by a save that had no inputs for it.
+        if (!fd.has(`s1_${series.id}`)) continue;
         series.team1Score = num(fd, `s1_${series.id}`);
         series.team2Score = num(fd, `s2_${series.id}`);
         series.winnerId = str(fd, `w_${series.id}`) || null;
@@ -715,6 +718,101 @@ export async function savePlayoffsAction(_prev: ActionResult, fd: FormData): Pro
       league.playoffs.championId = str(fd, "championId") || null;
     });
     return "Bracket saved.";
+  });
+}
+
+export async function addTiebreakerAction(
+  _prev: ActionResult,
+  fd: FormData,
+): Promise<ActionResult> {
+  return guard(async () => {
+    const team1 = str(fd, "team1Id");
+    const team2 = str(fd, "team2Id");
+    if (!team1 || !team2) throw new Error("Pick both teams.");
+    if (team1 === team2) throw new Error("Pick two different teams.");
+
+    await mutateLeague((league) => {
+      if (!league.teams.some((t) => t.id === team1) || !league.teams.some((t) => t.id === team2)) {
+        throw new Error("One of those teams no longer exists.");
+      }
+      const taken = new Set(league.playoffs.series.map((s) => s.id));
+      let n = 1;
+      while (taken.has(`tb-${n}`)) n++;
+      league.playoffs.series.unshift({
+        id: `tb-${n}`,
+        round: "tiebreaker",
+        label: str(fd, "label") || "Tiebreaker",
+        slot1: `team:${team1}`,
+        slot2: `team:${team2}`,
+        team1Score: null,
+        team2Score: null,
+        winnerId: null,
+        playerScores: [],
+      });
+    });
+    return "Tiebreaker added. Enter its result in the Tiebreaker section above.";
+  });
+}
+
+export async function deleteTiebreakerAction(
+  _prev: ActionResult,
+  fd: FormData,
+): Promise<ActionResult> {
+  return guard(async () => {
+    const id = str(fd, "id");
+    await mutateLeague((league) => {
+      const series = league.playoffs.series.find((s) => s.id === id);
+      // Only tiebreakers can be removed; the bracket itself is fixed.
+      if (!series || series.round !== "tiebreaker") throw new Error("That tiebreaker is gone.");
+      league.playoffs.series = league.playoffs.series.filter((s) => s.id !== id);
+    });
+    return "Tiebreaker removed.";
+  });
+}
+
+/**
+ * Bowler scores for one playoff series or tiebreaker. Stored on the series,
+ * never on a week, so they show as postseason stats and leave season averages
+ * and totals alone.
+ */
+export async function savePlayoffScoresAction(
+  _prev: ActionResult,
+  fd: FormData,
+): Promise<ActionResult> {
+  return guard(async () => {
+    const seriesId = str(fd, "seriesId");
+    let count = 0;
+
+    await mutateLeague((league) => {
+      const series = league.playoffs.series.find((s) => s.id === seriesId);
+      if (!series) throw new Error("That series no longer exists.");
+
+      // Only the two rosters on the form are rewritten. Anyone else keeps
+      // what they had — the form never showed them.
+      const covered = new Set(
+        str(fd, "coveredPlayerIds")
+          .split(",")
+          .map((id) => id.trim())
+          .filter(Boolean),
+      );
+      if (covered.size === 0) throw new Error("No bowlers on this form — nothing was saved.");
+
+      const kept = (series.playerScores ?? []).filter((s) => !covered.has(s.playerId));
+      const entered: typeof kept = [];
+      for (const player of league.players) {
+        if (!covered.has(player.id)) continue;
+        for (const game of [1, 2, 3] as GameNumber[]) {
+          const score = num(fd, `s_${player.id}_${game}`);
+          const strikes = num(fd, `x_${player.id}_${game}`);
+          if (score === null && strikes === null) continue;
+          entered.push({ playerId: player.id, game, score, strikes });
+          if (score !== null) count++;
+        }
+      }
+      series.playerScores = [...kept, ...entered];
+    });
+
+    return `Playoff scores saved — ${count} game score${count === 1 ? "" : "s"} recorded. Season stats are unchanged.`;
   });
 }
 

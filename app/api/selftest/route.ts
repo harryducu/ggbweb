@@ -198,7 +198,8 @@ export async function GET() {
   );
 
   const bracket = resolvePlayoffs(league);
-  ok("bracket has 5 series", bracket.length === 5, String(bracket.length));
+  const bracketOnly = bracket.filter((b) => b.series.round !== "tiebreaker");
+  ok("bracket has 5 series", bracketOnly.length === 5, String(bracketOnly.length));
   ok(
     "play-in slots resolve to seeds 3-6",
     bracket

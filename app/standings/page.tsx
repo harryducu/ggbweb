@@ -1,5 +1,5 @@
 import { getLeague } from "@/lib/store";
-import { computeStandings, fmtAvg, fmtInt } from "@/lib/stats";
+import { computeStandings, findTeam, fmtAvg, fmtInt, tiebreakerResults } from "@/lib/stats";
 import { StandingsTable } from "@/components/standings-table";
 import { PageTitle, StatLine, StatRow } from "@/components/ui";
 
@@ -12,6 +12,7 @@ export default async function StandingsPage() {
   const played = standings.reduce((n, s) => n + s.games, 0) / 2;
   const pins = standings.reduce((n, s) => n + s.totalPins, 0);
   const avg = played > 0 ? pins / (played * 2) : null;
+  const tiebreakers = tiebreakerResults(league).filter((t) => t.winnerId);
   const best = [...standings].sort((a, b) => (b.avgScore ?? 0) - (a.avgScore ?? 0))[0];
 
   return (
@@ -19,7 +20,7 @@ export default async function StandingsPage() {
       <PageTitle
         overline="League table"
         title="Standings"
-        lede={`Every game of every Monday night counts on its own. ${league.settings.pointsPerWin} points for a win, ${league.settings.pointsPerTie} for a tie. Ties in the table break on total pins.`}
+        lede={`Every game of every Monday night counts on its own. ${league.settings.pointsPerWin} points for a win, ${league.settings.pointsPerTie} for a tie. Teams level on win % are separated by a tiebreaker game if one was bowled, then by total pins.`}
       />
 
       <div className="py-6 md:py-8 space-y-8">
@@ -36,6 +37,31 @@ export default async function StandingsPage() {
         <div className="panel overflow-hidden">
           <StandingsTable standings={standings} playoffLine={league.playoffs.qualifiers} />
         </div>
+
+        {tiebreakers.length > 0 ? (
+          <div className="panel px-3.5 py-3 space-y-1">
+            <div className="overline text-gold">Tiebreakers</div>
+            {tiebreakers.map((t) => {
+              const winner = findTeam(league, t.winnerId!);
+              const loserId = t.winnerId === t.team1Id ? t.team2Id : t.team1Id;
+              const loser = loserId ? findTeam(league, loserId) : undefined;
+              const won = t.winnerId === t.team1Id ? t.team1Score : t.team2Score;
+              const lost = t.winnerId === t.team1Id ? t.team2Score : t.team1Score;
+              return (
+                <p key={t.series.id} className="hint !text-[0.85rem]">
+                  {winner?.name} rank ahead of {loser?.name} after winning a tiebreaker game
+                  {won !== null && lost !== null ? (
+                    <span className="num">
+                      {" "}
+                      {won}–{lost}
+                    </span>
+                  ) : null}
+                  .
+                </p>
+              );
+            })}
+          </div>
+        ) : null}
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Legend

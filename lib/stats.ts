@@ -86,6 +86,16 @@ export interface Standing {
 }
 
 export function computeStandings(league: League): Standing[] {
+  const tiebreakers = tiebreakerResults(league);
+  /** -1 when x won a tiebreaker game against y, 1 when y did, 0 if none. */
+  const headToHead = (x: string, y: string): number => {
+    const game = tiebreakers.find(
+      (t) => t.winnerId && [t.team1Id, t.team2Id].includes(x) && [t.team1Id, t.team2Id].includes(y),
+    );
+    if (!game) return 0;
+    return game.winnerId === x ? -1 : game.winnerId === y ? 1 : 0;
+  };
+
   const base = new Map<string, Omit<Standing, "rank" | "winPct" | "avgScore">>();
   for (const team of league.teams) {
     base.set(team.id, {
@@ -191,9 +201,12 @@ export function computeStandings(league: League): Standing[] {
       // Win percentage first, matching the commissioner's own standings sheet.
       // Points would rank a 3-3 team above a 2-1 team, which is wrong in a league
       // where byes leave teams on different game counts.
+      // Level teams are separated by a tiebreaker game when one was bowled,
+      // before falling back to pins.
       .sort(
         (x, y) =>
           y.winPct - x.winPct ||
+          headToHead(x.team.id, y.team.id) ||
           y.wins - x.wins ||
           y.totalPins - x.totalPins ||
           x.team.name.localeCompare(y.team.name),
@@ -593,6 +606,85 @@ export function computePowerRankings(league: League): PowerRow[] {
 
 /* ---------------------------------------------------------------- playoffs */
 
+export const PLAYOFF_ROUND_LABEL: Record<PlayoffSeries["round"], string> = {
+  tiebreaker: "Tiebreaker",
+  playin: "Play-in round",
+  semifinal: "Semifinals",
+  final: "Championship",
+};
+
+/** Sum of a team's bowlers' scores in one playoff series, all games. */
+export function seriesPlayerTotal(
+  league: League,
+  series: PlayoffSeries,
+  teamId: string | undefined,
+): number | null {
+  if (!teamId) return null;
+  const roster = new Set(rosterFor(league, teamId).map((p) => p.id));
+  const scores = (series.playerScores ?? []).filter(
+    (s) => s.score !== null && roster.has(s.playerId),
+  );
+  return scores.length ? scores.reduce((n, s) => n + (s.score ?? 0), 0) : null;
+}
+
+/** A typed-in series score wins; otherwise the bowlers' pins add up to it. */
+function seriesScore(
+  league: League,
+  series: PlayoffSeries,
+  side: 1 | 2,
+  team: Team | undefined,
+): number | null {
+  const manual = side === 1 ? series.team1Score : series.team2Score;
+  return manual ?? seriesPlayerTotal(league, series, team?.id);
+}
+
+function decide(
+  series: PlayoffSeries,
+  t1: Team | undefined,
+  t2: Team | undefined,
+  s1: number | null,
+  s2: number | null,
+): string | null {
+  if (series.winnerId) return series.winnerId;
+  if (s1 === null || s2 === null || s1 === s2) return null;
+  return (s1 > s2 ? t1 : t2)?.id ?? null;
+}
+
+export interface TiebreakerResult {
+  series: PlayoffSeries;
+  team1Id: string | null;
+  team2Id: string | null;
+  team1Score: number | null;
+  team2Score: number | null;
+  winnerId: string | null;
+}
+
+/**
+ * Tiebreaker games name their teams directly, so they resolve without the
+ * standings — which matters, because the standings are what they feed.
+ */
+export function tiebreakerResults(league: League): TiebreakerResult[] {
+  const direct = (slot: string) => (slot.startsWith("team:") ? slot.slice(5) : null);
+  return league.playoffs.series
+    .filter((s) => s.round === "tiebreaker")
+    .map((series) => {
+      const team1Id = direct(series.slot1);
+      const team2Id = direct(series.slot2);
+      const t1 = team1Id ? findTeam(league, team1Id) : undefined;
+      const t2 = team2Id ? findTeam(league, team2Id) : undefined;
+      const team1Score = seriesScore(league, series, 1, t1);
+      const team2Score = seriesScore(league, series, 2, t2);
+      return {
+        series,
+        team1Id,
+        team2Id,
+        team1Score,
+        team2Score,
+        winnerId: decide(series, t1, t2, team1Score, team2Score),
+      };
+    });
+}
+
 export interface ResolvedSeries {
   series: PlayoffSeries;
   team1: Team | undefined;
@@ -600,6 +692,9 @@ export interface ResolvedSeries {
   /** Text shown when a slot's team isn't known yet, e.g. "Winner of 4 vs 5". */
   team1Label: string;
   team2Label: string;
+  /** Typed-in score, or the bowlers' total when none was typed. */
+  team1Score: number | null;
+  team2Score: number | null;
   winner: Team | undefined;
 }
 
@@ -614,10 +709,14 @@ export function resolvePlayoffs(league: League): ResolvedSeries[] {
     if (s.winnerId) return findTeam(league, s.winnerId);
     const t1 = resolveSlot(s.slot1, depth + 1);
     const t2 = resolveSlot(s.slot2, depth + 1);
-    if (s.team1Score === null || s.team2Score === null || s.team1Score === s.team2Score) {
-      return undefined;
-    }
-    return s.team1Score > s.team2Score ? t1 : t2;
+    const winnerId = decide(
+      s,
+      t1,
+      t2,
+      seriesScore(league, s, 1, t1),
+      seriesScore(league, s, 2, t2),
+    );
+    return winnerId ? findTeam(league, winnerId) : undefined;
   };
 
   const resolveSlot = (slot: string, depth = 0): Team | undefined => {
@@ -639,14 +738,87 @@ export function resolvePlayoffs(league: League): ResolvedSeries[] {
     return "TBD";
   };
 
-  return league.playoffs.series.map((series) => ({
-    series,
-    team1: resolveSlot(series.slot1),
-    team2: resolveSlot(series.slot2),
-    team1Label: labelFor(series.slot1),
-    team2Label: labelFor(series.slot2),
-    winner: winnerOf(series.id),
-  }));
+  return league.playoffs.series.map((series) => {
+    const team1 = resolveSlot(series.slot1);
+    const team2 = resolveSlot(series.slot2);
+    return {
+      series,
+      team1,
+      team2,
+      team1Label: labelFor(series.slot1),
+      team2Label: labelFor(series.slot2),
+      team1Score: seriesScore(league, series, 1, team1),
+      team2Score: seriesScore(league, series, 2, team2),
+      winner: winnerOf(series.id),
+    };
+  });
+}
+
+/* ------------------------------------------------------- postseason stats */
+
+export interface PostseasonLine {
+  series: PlayoffSeries;
+  opponent: Team | undefined;
+  scores: Array<number | null>;
+  total: number | null;
+  strikes: number | null;
+}
+
+/**
+ * A bowler's playoff and tiebreaker games. Deliberately separate from
+ * computePlayerStats: none of this touches the season average or totals.
+ */
+export interface PostseasonStats {
+  player: Player;
+  team: Team | undefined;
+  games: number;
+  totalScore: number;
+  average: number | null;
+  strikes: number;
+  highGame: number | null;
+  lines: PostseasonLine[];
+}
+
+export function computePostseasonStats(league: League): PostseasonStats[] {
+  const resolved = resolvePlayoffs(league);
+  const order: PlayoffSeries["round"][] = ["tiebreaker", "playin", "semifinal", "final"];
+  const ordered = [...resolved].sort(
+    (a, b) => order.indexOf(a.series.round) - order.indexOf(b.series.round),
+  );
+
+  return league.players
+    .map((player) => {
+      const lines: PostseasonLine[] = [];
+      for (const r of ordered) {
+        const entries = (r.series.playerScores ?? []).filter((s) => s.playerId === player.id);
+        const scores = GAMES.map((g) => entries.find((s) => s.game === g)?.score ?? null);
+        const bowled = scores.filter((v): v is number => v !== null);
+        if (bowled.length === 0) continue;
+        const strikes = entries.map((s) => s.strikes).filter((v): v is number => v !== null);
+        const onTeam1 = player.teamId !== null && r.team1?.id === player.teamId;
+        lines.push({
+          series: r.series,
+          opponent: onTeam1 ? r.team2 : r.team1,
+          scores,
+          total: bowled.reduce((a, b) => a + b, 0),
+          strikes: strikes.length ? strikes.reduce((a, b) => a + b, 0) : null,
+        });
+      }
+      const all = lines.flatMap((l) => l.scores).filter((v): v is number => v !== null);
+      const totalScore = all.reduce((a, b) => a + b, 0);
+      return {
+        player,
+        team: player.teamId ? findTeam(league, player.teamId) : undefined,
+        games: all.length,
+        totalScore,
+        average: all.length ? totalScore / all.length : null,
+        strikes: lines.reduce((n, l) => n + (l.strikes ?? 0), 0),
+        highGame: all.length ? Math.max(...all) : null,
+        lines,
+      };
+    })
+    .filter((s) => s.games > 0)
+    .sort((a, b) => (b.average ?? 0) - (a.average ?? 0) || b.totalScore - a.totalScore);
 }
 
 /* --------------------------------------------------------------- formatting */

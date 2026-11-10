@@ -2,6 +2,7 @@ import { cache } from "react";
 import {
   ASSETS_VERSION,
   BUNDLED_TEAM_LOGOS,
+  DATA_FIX_VERSION,
   SCHEDULE_VERSION,
   buildSeedLeague,
   scheduleForWeek,
@@ -93,18 +94,85 @@ function migrateTeamLogos(league: League): boolean {
   return true;
 }
 
-/** Every pending upgrade for a stored league. */
-function migrate(league: League): boolean {
-  // Both run; `||` would skip the second once the first reported a change.
+/**
+ * One-time corrections to the stored season, applied once and then marked
+ * done. Each fix only touches a value that still holds what it is correcting,
+ * so anything the commissioner already changed by hand is left alone.
+ */
+function migrateDataFixes(league: League): boolean {
+  const version = league.settings.dataFixVersion ?? 0;
+  if (version >= DATA_FIX_VERSION) return false;
+
+  if (version < 1) {
+    // The league broke after week 5 and came back on Nov 2, so weeks 6 and 7
+    // were bowled three weeks later than the original Monday-by-Monday dates.
+    const moved: Record<number, [string, string]> = {
+      6: ["2026-10-19", "2026-11-02"],
+      7: ["2026-10-26", "2026-11-09"],
+    };
+    for (const week of league.weeks) {
+      const fix = moved[week.weekNumber];
+      if (fix && week.date === fix[0]) week.date = fix[1];
+    }
+
+    // Sunday Guys and Osama Pin Laden finished level on win percentage and
+    // bowled a tiebreaker for the last playoff spot. Sunday Guys won it.
+    const ids = new Set(league.teams.map((t) => t.id));
+    const hasTiebreaker = league.playoffs.series.some((s) => s.round === "tiebreaker");
+    if (!hasTiebreaker && ids.has("sunday-guys") && ids.has("osama-pin-laden")) {
+      league.playoffs.series.unshift({
+        id: "tb-1",
+        round: "tiebreaker",
+        label: "Tiebreaker",
+        slot1: "team:sunday-guys",
+        slot2: "team:osama-pin-laden",
+        team1Score: null,
+        team2Score: null,
+        winnerId: "sunday-guys",
+        playerScores: [],
+      });
+    }
+
+    league.settings.rules = league.settings.rules.replace(
+      "Ties in the standings are broken by total pins.",
+      "Ties in the standings are broken by a tiebreaker game when one is bowled, otherwise by total pins.",
+    );
+  }
+
+  league.settings.dataFixVersion = DATA_FIX_VERSION;
+  return true;
+}
+
+/**
+ * Every pending upgrade for a stored league. A data fix rewrites real season
+ * data, so the league exactly as it was is copied aside first; if the copy
+ * can't be made, nothing is changed.
+ */
+async function migrate(league: League): Promise<boolean> {
+  if ((league.settings.dataFixVersion ?? 0) < DATA_FIX_VERSION) {
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+    await storage().writeBackup(
+      `before-fix-${DATA_FIX_VERSION}-${stamp}`,
+      JSON.stringify(league, null, 2),
+    );
+  }
+  return applyMigrations(league);
+}
+
+/** The upgrades themselves, in memory only. */
+function applyMigrations(league: League): boolean {
+  // All run; `||` would skip the later ones once an earlier one reported a change.
   const schedule = migrateSchedule(league);
   const logos = migrateTeamLogos(league);
-  return schedule || logos;
+  const fixes = migrateDataFixes(league);
+  return schedule || logos || fixes;
 }
 
 function needsMigration(league: League): boolean {
   return (
     league.settings.scheduleVersion !== SCHEDULE_VERSION ||
-    league.settings.assetsVersion !== ASSETS_VERSION
+    league.settings.assetsVersion !== ASSETS_VERSION ||
+    (league.settings.dataFixVersion ?? 0) < DATA_FIX_VERSION
   );
 }
 
@@ -116,7 +184,13 @@ async function loadStored(): Promise<League | null> {
 export async function readLeague(): Promise<League> {
   if (isBuildPhase()) {
     try {
-      return (await loadStored()) ?? buildSeedLeague();
+      // Pages are prerendered from this, so show them upgraded — but only in
+      // memory. The stored copy is backed up and rewritten on the first real
+      // request or save, never during a build.
+      const stored = await loadStored();
+      if (!stored) return buildSeedLeague();
+      applyMigrations(stored);
+      return stored;
     } catch {
       return buildSeedLeague();
     }
@@ -130,7 +204,7 @@ export async function readLeague(): Promise<League> {
     if (needsMigration(stored)) {
       return enqueue(async () => {
         const fresh = (await loadStored()) ?? buildSeedLeague();
-        if (migrate(fresh)) {
+        if (await migrate(fresh)) {
           await storage().writeDoc(JSON.stringify(fresh, null, 2));
         }
         return fresh;
@@ -165,7 +239,7 @@ function enqueue<T>(run: () => Promise<T>): Promise<T> {
 export function mutateLeague<T>(fn: (league: League) => T | Promise<T>): Promise<T> {
   return enqueue(async () => {
     const league = (await loadStored()) ?? buildSeedLeague();
-    migrate(league);
+    await migrate(league);
     const result = await fn(league);
     await storage().writeDoc(JSON.stringify(league, null, 2));
     return result;

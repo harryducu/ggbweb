@@ -19,6 +19,7 @@ export default async function PlayoffsPage() {
     return rank && rank <= qualifiers ? rank : null;
   };
 
+  const tiebreakers = resolved.filter((r) => r.series.round === "tiebreaker");
   const playIn = resolved.filter((r) => r.series.round === "playin");
   const semis = resolved.filter((r) => r.series.round === "semifinal");
   const final = resolved.find((r) => r.series.round === "final");
@@ -53,6 +54,22 @@ export default async function PlayoffsPage() {
       />
 
       <div className="py-7 md:py-9 space-y-9">
+        {/* ===================================================== tiebreakers */}
+        {tiebreakers.length > 0 ? (
+          <section>
+            <div className="overline mb-2">Tiebreaker</div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {tiebreakers.map((r) => (
+                <SeriesCard key={r.series.id} resolved={r} seedOf={seedOf} />
+              ))}
+            </div>
+            <p className="hint mt-2">
+              Bowled between teams level on win percentage. The winner ranks ahead in the standings
+              and the seeding.
+            </p>
+          </section>
+        ) : null}
+
         {/* ========================================================= bracket */}
         <section>
           <div className="hidden lg:grid grid-cols-5 gap-x-0 mb-2 overline text-center">
@@ -192,7 +209,11 @@ export default async function PlayoffsPage() {
           </div>
           <p className="hint mt-2">
             Seeds resolve automatically from the standings. Enter playoff scores from Commissioner →
-            Manage Playoffs and the bracket advances on its own.
+            Manage Playoffs and the bracket advances on its own.{" "}
+            <Link href="/stats#playoffs" className="underline">
+              Playoff bowler stats
+            </Link>{" "}
+            are kept separate from the season.
           </p>
         </section>
       </div>

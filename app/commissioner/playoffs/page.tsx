@@ -1,21 +1,25 @@
 import Link from "next/link";
 import { readLeague } from "@/lib/store";
-import { computeStandings, resolvePlayoffs } from "@/lib/stats";
-import { ActionForm, Check, Field, FormStatus, StickySave } from "@/components/admin/form-kit";
-import { savePlayoffsAction } from "@/lib/actions";
+import { PLAYOFF_ROUND_LABEL, computeStandings, resolvePlayoffs } from "@/lib/stats";
+import {
+  ActionForm,
+  Check,
+  DangerSubmit,
+  Field,
+  FormStatus,
+  StickySave,
+  SubmitBtn,
+} from "@/components/admin/form-kit";
+import { addTiebreakerAction, deleteTiebreakerAction, savePlayoffsAction } from "@/lib/actions";
 
 export const metadata = { title: "Manage Playoffs" };
-
-const ROUND_LABEL = {
-  playin: "Play-in round",
-  semifinal: "Semifinals",
-  final: "Championship",
-} as const;
 
 export default async function PlayoffsAdminPage() {
   const league = await readLeague();
   const standings = computeStandings(league);
   const resolved = resolvePlayoffs(league);
+  const teams = [...league.teams].sort((a, b) => a.sortOrder - b.sortOrder);
+  const tiebreakers = resolved.filter((r) => r.series.round === "tiebreaker");
 
   return (
     <div className="space-y-5">
@@ -27,7 +31,11 @@ export default async function PlayoffsAdminPage() {
           <Link href="/playoffs" className="text-muted underline">
             See the public bracket
           </Link>
-          .
+          . Bowler scores for each series go under{" "}
+          <Link href="/commissioner/playoff-scores" className="text-muted underline">
+            Playoff Scores
+          </Link>{" "}
+          and are kept out of season stats.
         </p>
       </div>
 
@@ -96,23 +104,37 @@ export default async function PlayoffsAdminPage() {
 
         {/* ----------------------------------------------------- series */}
         <section className="space-y-3">
-          {(["playin", "semifinal", "final"] as const).map((round) => {
+          {(["tiebreaker", "playin", "semifinal", "final"] as const).map((round) => {
             const series = resolved.filter((r) => r.series.round === round);
             if (series.length === 0) return null;
             return (
               <div key={round} className="panel overflow-hidden">
                 <div className="panel-head">
-                  <span className="overline">{ROUND_LABEL[round]}</span>
-                  <span className="overline">{series.length} series</span>
+                  <span className="overline">{PLAYOFF_ROUND_LABEL[round]}</span>
+                  <span className="overline">
+                    {round === "tiebreaker"
+                      ? "Winner ranks ahead when level on win %"
+                      : `${series.length} series`}
+                  </span>
                 </div>
                 <div className="divide-y divide-line">
                   {series.map((r) => (
                     <div key={r.series.id} className="px-3.5 py-3">
-                      <div className="overline mb-2">{r.series.label}</div>
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <span className="overline">{r.series.label}</span>
+                        {r.team1 && r.team2 ? (
+                          <Link
+                            href={`/commissioner/playoff-scores?series=${r.series.id}`}
+                            className="section-link"
+                          >
+                            Bowler scores →
+                          </Link>
+                        ) : null}
+                      </div>
                       <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_5rem_minmax(0,1fr)_5rem] gap-2 sm:gap-3 items-end">
                         <div>
                           <span className="label">{r.team1?.name ?? r.team1Label}</span>
-                          <div className="hint">{r.team1 ? "Seeded" : "Not decided yet"}</div>
+                          <div className="hint">{r.team1 ? (r.series.round === "tiebreaker" ? "Tied in the standings" : "Seeded") : "Not decided yet"}</div>
                         </div>
                         <label className="block">
                           <span className="label">Score</span>
@@ -122,13 +144,13 @@ export default async function PlayoffsAdminPage() {
                             name={`s1_${r.series.id}`}
                             defaultValue={r.series.team1Score ?? ""}
                             className="input input-num"
-                            placeholder="—"
+                            placeholder={r.team1Score === null ? "—" : String(r.team1Score)}
                             aria-label={`${r.team1?.name ?? r.team1Label} score`}
                           />
                         </label>
                         <div>
                           <span className="label">{r.team2?.name ?? r.team2Label}</span>
-                          <div className="hint">{r.team2 ? "Seeded" : "Not decided yet"}</div>
+                          <div className="hint">{r.team2 ? (r.series.round === "tiebreaker" ? "Tied in the standings" : "Seeded") : "Not decided yet"}</div>
                         </div>
                         <label className="block">
                           <span className="label">Score</span>
@@ -138,7 +160,7 @@ export default async function PlayoffsAdminPage() {
                             name={`s2_${r.series.id}`}
                             defaultValue={r.series.team2Score ?? ""}
                             className="input input-num"
-                            placeholder="—"
+                            placeholder={r.team2Score === null ? "—" : String(r.team2Score)}
                             aria-label={`${r.team2?.name ?? r.team2Label} score`}
                           />
                         </label>
@@ -162,7 +184,7 @@ export default async function PlayoffsAdminPage() {
                         </label>
                         <p className="hint pb-1">
                           {r.winner
-                            ? `Advancing: ${r.winner.name}`
+                            ? `${r.series.round === "tiebreaker" ? "Won it" : "Advancing"}: ${r.winner.name}`
                             : "No winner yet — enter both scores or set one by hand."}
                         </p>
                       </div>
@@ -194,6 +216,68 @@ export default async function PlayoffsAdminPage() {
 
         <StickySave label="Save bracket" />
       </ActionForm>
+
+      {/* ------------------------------------------------- tiebreakers */}
+      <section className="panel p-4 space-y-4">
+        <div>
+          <div className="overline">Tiebreaker games</div>
+          <p className="hint mt-1 max-w-2xl">
+            When two teams finish level on win percentage, the winner of a tiebreaker game between
+            them ranks ahead in the standings and the seeding. Without one, total pins decide.
+          </p>
+        </div>
+
+        {tiebreakers.map((r) => (
+          <ActionForm
+            key={r.series.id}
+            action={deleteTiebreakerAction}
+            className="flex flex-wrap items-center gap-3 border-t border-line pt-3"
+          >
+            <input type="hidden" name="id" value={r.series.id} />
+            <span className="flex-1 min-w-0 text-[0.9rem]">
+              {r.team1?.name ?? "?"} <span className="text-muted-2">vs</span>{" "}
+              {r.team2?.name ?? "?"}
+              <span className="hint ml-2">
+                {r.winner ? `${r.winner.name} won` : "No result yet"}
+              </span>
+            </span>
+            <DangerSubmit confirmLabel="Remove tiebreaker">Remove</DangerSubmit>
+            <FormStatus className="!mt-0 w-full" />
+          </ActionForm>
+        ))}
+
+        <ActionForm action={addTiebreakerAction} className="border-t border-line pt-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-3">
+            <Field label="Team">
+              <select name="team1Id" className="input" defaultValue="">
+                <option value="">Pick a team</option>
+                {teams.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Against">
+              <select name="team2Id" className="input" defaultValue="">
+                <option value="">Pick a team</option>
+                {teams.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Label">
+              <input name="label" className="input" placeholder="Tiebreaker" />
+            </Field>
+          </div>
+          <div className="mt-3 flex items-center gap-3">
+            <SubmitBtn>Add tiebreaker</SubmitBtn>
+            <FormStatus className="!mt-0" />
+          </div>
+        </ActionForm>
+      </section>
     </div>
   );
 }

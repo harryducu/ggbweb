@@ -18,6 +18,11 @@ export interface StorageDriver {
   /** The league document as JSON text, or null if it has never been written. */
   readDoc(): Promise<string | null>;
   writeDoc(json: string): Promise<void>;
+  /**
+   * Saves a copy of the league document beside the live one, never over it.
+   * Used before any automatic change to stored data so it can be undone.
+   */
+  writeBackup(label: string, json: string): Promise<void>;
   /** Stores an image and returns the URL to render it from. */
   putImage(folder: string, filename: string, bytes: Buffer, contentType: string): Promise<string>;
   /** Best effort; never throws. */
@@ -52,6 +57,12 @@ const filesystemDriver: StorageDriver = {
     const tmp = `${DATA_FILE}.${process.pid}.${randomBytes(6).toString("hex")}.tmp`;
     await fs.writeFile(tmp, json, "utf8");
     await fs.rename(tmp, DATA_FILE);
+  },
+
+  async writeBackup(label, json) {
+    const dir = path.join(DATA_DIR, "backups");
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(path.join(dir, `league-${label}.json`), json, "utf8");
   },
 
   async putImage(folder, filename, bytes) {
@@ -238,6 +249,19 @@ function blobDriver(): StorageDriver {
         });
       } catch (error) {
         throw blobFailure("save the league data", error);
+      }
+    },
+
+    async writeBackup(label, json) {
+      try {
+        await putBlob(`league/backups/league-${label}.json`, json, {
+          contentType: "application/json",
+          addRandomSuffix: false,
+          allowOverwrite: true,
+          cacheControlMaxAge: 0,
+        });
+      } catch (error) {
+        throw blobFailure("back up the league data", error);
       }
     },
 

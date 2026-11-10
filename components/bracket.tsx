@@ -29,7 +29,7 @@ export function SeriesCard({
       <SeriesSide
         team={team1}
         label={team1Label}
-        score={series.team1Score}
+        score={resolved.team1Score}
         seed={seedOf(team1)}
         won={decided && winner?.id === team1?.id}
         lost={decided && winner?.id !== team1?.id}
@@ -38,7 +38,7 @@ export function SeriesCard({
       <SeriesSide
         team={team2}
         label={team2Label}
-        score={series.team2Score}
+        score={resolved.team2Score}
         seed={seedOf(team2)}
         won={decided && winner?.id === team2?.id}
         lost={decided && winner?.id !== team2?.id}

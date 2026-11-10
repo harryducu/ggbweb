@@ -12,6 +12,11 @@ const SECTIONS = [
   { href: "/commissioner/players", label: "Players", hint: "Rosters and photos" },
   { href: "/commissioner/teams", label: "Teams", hint: "Names, logos, colors" },
   { href: "/commissioner/playoffs", label: "Playoffs", hint: "Bracket and results" },
+  {
+    href: "/commissioner/playoff-scores",
+    label: "Playoff Scores",
+    hint: "Bowler scores, kept out of season stats",
+  },
   { href: "/commissioner/settings", label: "League Settings", hint: "Branding and rules" },
 ];
 

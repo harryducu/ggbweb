@@ -1,13 +1,15 @@
 import { getLeague } from "@/lib/store";
-import { computePlayerStats, fmtAvg, fmtInt } from "@/lib/stats";
+import { computePlayerStats, computePostseasonStats, fmtAvg, fmtInt } from "@/lib/stats";
 import { StatsTable, type StatsColumn, type StatsRow } from "@/components/stats-table";
-import { PageTitle, StatLine, StatRow } from "@/components/ui";
+import { PostseasonTable } from "@/components/postseason-table";
+import { PageTitle, SectionHead, StatLine, StatRow } from "@/components/ui";
 
 export const metadata = { title: "Stats" };
 
 export default async function StatsPage() {
   const league = await getLeague();
   const stats = computePlayerStats(league);
+  const postseason = computePostseasonStats(league);
 
   const rows: StatsRow[] = stats.map((s) => ({
     id: s.player.id,
@@ -82,6 +84,17 @@ export default async function StatsPage() {
             as sortable columns automatically.
           </p>
         </div>
+
+        {postseason.length > 0 ? (
+          <section id="playoffs">
+            <SectionHead overline="Postseason" title="Playoff stats" />
+            <PostseasonTable stats={postseason} />
+            <p className="hint mt-2">
+              Tiebreaker and playoff games. Kept on their own &mdash; they don&apos;t count toward
+              the season averages, totals or highs above.
+            </p>
+          </section>
+        ) : null}
       </div>
     </div>
   );

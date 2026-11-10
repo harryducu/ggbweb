@@ -334,6 +334,9 @@ export const BUNDLED_TEAM_LOGOS: Record<string, string> = {
 /** Bumped when the bundled crests change, so stored leagues pick them up. */
 export const ASSETS_VERSION = 1;
 
+/** Bump when a new one-time correction to stored data is added in store.ts. */
+export const DATA_FIX_VERSION = 1;
+
 /** Bumped when the fixture list changes, so stored leagues can be migrated. */
 export const SCHEDULE_VERSION = 2;
 
@@ -421,7 +424,9 @@ export function buildSeedLeague(): League {
     };
   });
 
-  const dates = mondayDates(7, "2026-09-14");
+  // Weeks 1-5 ran Monday by Monday; the league then broke and came back on
+  // Nov 2 for weeks 6 and 7.
+  const dates = [...mondayDates(5, "2026-09-14"), ...mondayDates(2, "2026-11-02")];
   const weeks: Week[] = SCHEDULE.map((wk, wi) => ({
     id: `week-${wi + 1}`,
     weekNumber: wi + 1,
@@ -458,6 +463,7 @@ export function buildSeedLeague(): League {
       currentWeek: 3,
       scheduleVersion: SCHEDULE_VERSION,
       assetsVersion: ASSETS_VERSION,
+      dataFixVersion: DATA_FIX_VERSION,
       description:
         "Monday night bowling. Seven teams, four bowlers each, three games a night, one bye per team across the seven-week regular season. Top six make the playoffs.",
       rules: [
@@ -467,7 +473,7 @@ export function buildSeedLeague(): League {
         "Team score for a game is the sum of its four bowlers' scores.",
         "A bowler missing a night scores zero unless a substitute is approved by the commissioner.",
         "Top six teams by points make the playoffs. Seeds 1 and 2 get a bye into the semifinals.",
-        "Ties in the standings are broken by total pins.",
+        "Ties in the standings are broken by a tiebreaker game when one is bowled, otherwise by total pins.",
       ].join("\n"),
       pointsPerWin: 2,
       pointsPerTie: 1,

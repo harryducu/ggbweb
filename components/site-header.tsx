@@ -5,9 +5,11 @@ import type { LeagueSettings } from "@/lib/types";
 export function SiteHeader({
   settings,
   isCommissioner,
+  postseason = false,
 }: {
   settings: LeagueSettings;
   isCommissioner: boolean;
+  postseason?: boolean;
 }) {
   return (
     <header>
@@ -46,7 +48,7 @@ export function SiteHeader({
 
           <div className="flex items-center gap-2 flex-none">
             <span className="hidden sm:inline-flex badge badge-live">
-              Week {settings.currentWeek}
+              {postseason ? "Playoffs" : `Week ${settings.currentWeek}`}
             </span>
             <Link
               href="/commissioner"

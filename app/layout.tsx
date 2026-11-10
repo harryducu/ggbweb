@@ -4,6 +4,7 @@ import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { getLeague } from "@/lib/store";
+import { isPostseason } from "@/lib/stats";
 import { isCommissioner } from "@/lib/auth";
 
 const sans = Barlow({
@@ -50,7 +51,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         >
           Skip to content
         </a>
-        <SiteHeader settings={league.settings} isCommissioner={admin} />
+        <SiteHeader
+          settings={league.settings}
+          isCommissioner={admin}
+          postseason={isPostseason(league)}
+        />
         <main id="main">{children}</main>
         <SiteFooter settings={league.settings} />
       </body>

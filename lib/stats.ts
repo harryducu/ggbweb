@@ -814,6 +814,26 @@ export function resolvePlayoffs(league: League): ResolvedSeries[] {
   });
 }
 
+/**
+ * True once the current-week setting is past the last scheduled week and the
+ * bracket is switched on — the site then leads with the playoffs.
+ */
+export function isPostseason(league: League): boolean {
+  const last = Math.max(0, ...league.weeks.map((w) => w.weekNumber));
+  return league.playoffs.enabled && last > 0 && league.settings.currentWeek > last;
+}
+
+/** The round being bowled now: the first with a series still undecided. */
+export function currentPlayoffRound(
+  resolved: ResolvedSeries[],
+): Exclude<PlayoffSeries["round"], "tiebreaker"> | null {
+  for (const round of ["playin", "semifinal", "final"] as const) {
+    const series = resolved.filter((r) => r.series.round === round);
+    if (series.some((r) => !r.winner)) return round;
+  }
+  return null;
+}
+
 /* ------------------------------------------------------- postseason stats */
 
 export interface PostseasonLine {

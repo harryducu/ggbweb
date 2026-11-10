@@ -4,18 +4,23 @@ import {
   computePlayerStats,
   computePowerRankings,
   computeStandings,
+  currentPlayoffRound,
   fmtDate,
   fmtInt,
   fmtRecord,
   findTeam,
+  isPostseason,
   lastPlayedWeek,
   nextUnplayedWeek,
+  PLAYOFF_ROUND_LABEL,
+  resolvePlayoffs,
   topBowlers,
   weekByNumber,
   weekGames,
   weekState,
   weekTeamSummaries,
 } from "@/lib/stats";
+import { SeriesCard } from "@/components/bracket";
 import { GameGroups, NightLine } from "@/components/match-blocks";
 import { StandingsTable } from "@/components/standings-table";
 import { PowerRankRow } from "@/components/power-rows";
@@ -32,7 +37,10 @@ export default async function HomePage() {
   const leaders = topBowlers(playerStats, 5, "total");
 
   const currentWeek = weekByNumber(league, league.settings.currentWeek) ?? nextUnplayedWeek(league);
+  // In the postseason "last week" is the final week of the regular season.
+  const finalWeek = [...league.weeks].sort((a, b) => b.weekNumber - a.weekNumber)[0];
   const previousWeek =
+    (isPostseason(league) ? finalWeek : undefined) ??
     (currentWeek ? weekByNumber(league, currentWeek.weekNumber - 1) : undefined) ??
     lastPlayedWeek(league);
 
@@ -50,6 +58,21 @@ export default async function HomePage() {
   const currentBye = currentWeek?.byeTeamId ? findTeam(league, currentWeek.byeTeamId) : undefined;
   const lastBye = previousWeek?.byeTeamId ? findTeam(league, previousWeek.byeTeamId) : undefined;
 
+  // After the last scheduled week the scoreboard switches to the bracket.
+  const postseason = isPostseason(league);
+  const bracket = postseason ? resolvePlayoffs(league) : [];
+  const round = currentPlayoffRound(bracket);
+  const roundSeries = round ? bracket.filter((r) => r.series.round === round) : [];
+  const finalSeries = bracket.find((r) => r.series.round === "final");
+  const champion = league.playoffs.championId
+    ? findTeam(league, league.playoffs.championId)
+    : finalSeries?.winner;
+  const seedOf = (team: { id: string } | undefined): number | null => {
+    if (!team) return null;
+    const rank = standings.find((s) => s.team.id === team.id)?.rank;
+    return rank && rank <= league.playoffs.qualifiers ? rank : null;
+  };
+
   const leader = standings[0];
   const pinLeader = [...standings].sort((a, b) => b.totalPins - a.totalPins)[0];
   const topBowler = leaders[0];
@@ -61,15 +84,31 @@ export default async function HomePage() {
         <div className="wrap py-7 md:py-9">
           <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
             <div>
-              <div className="overline text-red">{league.settings.season} · Monday Night</div>
+              <div className="overline text-red">
+                {league.settings.season} · {postseason ? "Postseason" : "Monday Night"}
+              </div>
               <h1 className="display text-[clamp(2.4rem,9vw,4.5rem)] mt-1">
-                Week {currentWeek?.weekNumber ?? league.settings.currentWeek}
+                {postseason
+                  ? "Playoffs"
+                  : `Week ${currentWeek?.weekNumber ?? league.settings.currentWeek}`}
               </h1>
             </div>
             <div className="flex flex-wrap items-center gap-2 pb-1">
-              <span className="badge badge-live">In progress</span>
-              <span className="badge">{fmtDate(currentWeek?.date ?? null)}</span>
-              {currentBye ? (
+              {postseason ? (
+                champion ? (
+                  <span className="badge badge-bye">🏆 {champion.name}</span>
+                ) : (
+                  <span className="badge badge-live">
+                    {round ? PLAYOFF_ROUND_LABEL[round] : "In progress"}
+                  </span>
+                )
+              ) : (
+                <>
+                  <span className="badge badge-live">In progress</span>
+                  <span className="badge">{fmtDate(currentWeek?.date ?? null)}</span>
+                </>
+              )}
+              {!postseason && currentBye ? (
                 <span className="badge badge-bye">
                   <Crest team={currentBye} size={14} /> {currentBye.name} on bye
                 </span>
@@ -156,25 +195,70 @@ export default async function HomePage() {
             </div>
 
             {/* ------------------------------------------------- this week */}
-            <div className="panel">
-              <div className="panel-head">
-                <div>
-                  <span className="overline">This week</span>
-                  <span className="ml-2 display text-[1.05rem] text-cream">
-                    Week {currentWeek?.weekNumber ?? "—"}
+            {postseason ? (
+              <div className="panel">
+                <div className="panel-head">
+                  <div>
+                    <span className="overline">{champion ? "Season complete" : "This round"}</span>
+                    <span className="ml-2 display text-[1.05rem] text-cream">
+                      {champion ? "Champion" : round ? PLAYOFF_ROUND_LABEL[round] : "Playoffs"}
+                    </span>
+                  </div>
+                  {round ? (
+                    <span className="badge">
+                      {roundSeries[0]?.bestOf === 1
+                        ? "One game"
+                        : `Best of ${roundSeries[0]?.bestOf ?? "—"}`}
+                    </span>
+                  ) : null}
+                </div>
+                <div className="p-3 space-y-3">
+                  {champion ? (
+                    <Link
+                      href={`/teams/${champion.id}`}
+                      className="panel border-gold/60 bg-gold/[0.07] px-3.5 py-4 flex items-center gap-3 hover:opacity-90 transition-opacity"
+                    >
+                      <Crest team={champion} size={40} />
+                      <span>
+                        <span className="block overline text-gold">Champion</span>
+                        <span className="block display text-[1.4rem] text-cream">
+                          {champion.name}
+                        </span>
+                      </span>
+                    </Link>
+                  ) : (
+                    roundSeries.map((r) => (
+                      <SeriesCard key={r.series.id} resolved={r} seedOf={seedOf} />
+                    ))
+                  )}
+                </div>
+                <div className="px-3 py-2 border-t border-line">
+                  <Link href="/playoffs" className="section-link">
+                    Full playoff bracket →
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div className="panel">
+                <div className="panel-head">
+                  <div>
+                    <span className="overline">This week</span>
+                    <span className="ml-2 display text-[1.05rem] text-cream">
+                      Week {currentWeek?.weekNumber ?? "—"}
+                    </span>
+                  </div>
+                  <span className="badge">
+                    {thisWeekGames.reduce((n, g) => n + g.matchups.length, 0)} games
                   </span>
                 </div>
-                <span className="badge">
-                  {thisWeekGames.reduce((n, g) => n + g.matchups.length, 0)} games
-                </span>
+                <GameGroups groups={thisWeekGames} dense records={records} />
+                <div className="px-3 py-2 border-t border-line">
+                  <Link href="/schedule" className="section-link">
+                    Full season schedule →
+                  </Link>
+                </div>
               </div>
-              <GameGroups groups={thisWeekGames} dense records={records} />
-              <div className="px-3 py-2 border-t border-line">
-                <Link href="/schedule" className="section-link">
-                  Full season schedule →
-                </Link>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </section>

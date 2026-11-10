@@ -5,8 +5,6 @@ import { ActionForm, StickySave } from "./form-kit";
 import { savePlayoffScoresAction } from "@/lib/actions";
 import type { EntryTeam } from "./score-entry";
 
-const GAMES = [1, 2, 3] as const;
-
 /**
  * Bowler scores for one playoff series or tiebreaker. Same grid as the weekly
  * entry, but saved onto the series so none of it counts toward season stats.
@@ -14,12 +12,14 @@ const GAMES = [1, 2, 3] as const;
 export function PlayoffScoreEntry({
   seriesId,
   label,
+  bestOf,
   teams,
   initialScores,
   initialStrikes,
 }: {
   seriesId: string;
   label: string;
+  bestOf: number;
   teams: EntryTeam[];
   initialScores: Record<string, number | null>;
   initialStrikes: Record<string, number | null>;
@@ -30,6 +30,8 @@ export function PlayoffScoreEntry({
     ),
   );
   const [showStrikes, setShowStrikes] = useState(false);
+  const GAMES = Array.from({ length: bestOf }, (_, i) => i + 1);
+  const need = Math.floor(bestOf / 2) + 1;
 
   const teamTotal = (team: EntryTeam, game: number): number | null => {
     const vals = team.players
@@ -45,6 +47,20 @@ export function PlayoffScoreEntry({
     return games.some((v) => v !== null) ? games.reduce<number>((n, v) => n + (v ?? 0), 0) : null;
   };
 
+  /** Games won by each side so far — the series result for best-of rounds. */
+  const [a, b] = teams;
+  const wins = [0, 0];
+  for (const g of GAMES) {
+    const x = a ? teamTotal(a, g) : null;
+    const y = b ? teamTotal(b, g) : null;
+    if (x === null || y === null || x === y) continue;
+    wins[x > y ? 0 : 1]++;
+  }
+  const summary =
+    bestOf === 1
+      ? teams.map((t) => `${t.abbreviation} ${seriesTotal(t) ?? "—"}`).join("  ·  ")
+      : `${a?.abbreviation} ${wins[0]} – ${wins[1]} ${b?.abbreviation} · best of ${bestOf}, first to ${need}`;
+
   return (
     <ActionForm action={savePlayoffScoresAction}>
       <input type="hidden" name="seriesId" value={seriesId} />
@@ -55,9 +71,7 @@ export function PlayoffScoreEntry({
       />
 
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-        <span className="badge">
-          {teams.map((t) => `${t.abbreviation} ${seriesTotal(t) ?? "—"}`).join("  ·  ")}
-        </span>
+        <span className="badge">{summary}</span>
         <label className="flex items-center gap-2 cursor-pointer text-[0.82rem] text-muted">
           <input
             type="checkbox"
@@ -87,7 +101,7 @@ export function PlayoffScoreEntry({
                         G{g}
                       </th>
                     ))}
-                    <th className="w-16">Series</th>
+                    <th className="w-16">Pins</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -145,7 +159,7 @@ export function PlayoffScoreEntry({
                   })}
                   {team.players.length === 0 ? (
                     <tr>
-                      <td className="left dim" colSpan={5}>
+                      <td className="left dim" colSpan={bestOf + 2}>
                         No bowlers on this roster yet.
                       </td>
                     </tr>
@@ -171,9 +185,9 @@ export function PlayoffScoreEntry({
       </div>
 
       <p className="hint mt-3">
-        Fill in only the games that were bowled. If the team score boxes under Manage Playoffs are
-        blank, these totals decide the winner; a score typed there, or a winner set by hand, takes
-        priority.
+        Fill in only the games that were bowled. Each game goes to the team with more pins
+        {bestOf > 1 ? `, and the first to ${need} game wins takes the series` : ""}. A result typed
+        under Manage Playoffs, or a winner set by hand there, takes priority.
       </p>
 
       <StickySave label={`Save ${label} scores`} />

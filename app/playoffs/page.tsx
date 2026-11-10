@@ -43,7 +43,7 @@ export default async function PlayoffsPage() {
       <PageTitle
         overline={`${league.settings.season} · Postseason`}
         title="Playoff Bracket"
-        lede={`Top ${qualifiers} of ${league.teams.length} teams qualify. Seeds 1 and 2 skip the play-in round and wait in the semifinals. Single elimination from there.`}
+        lede={`Top ${qualifiers} of ${league.teams.length} teams qualify. Seeds 1 and 2 skip the play-in round and wait in the semifinals. The play-in is best of 3; the semifinals and championship are best of 5.`}
         right={
           champion ? (
             <span className="badge badge-bye pb-1">🏆 {champion.name}</span>

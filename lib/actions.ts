@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { assertCommissioner, checkPassword, createSession, destroySession } from "./auth";
 import { mutateLeague, readLeague, resetLeague } from "./store";
-import { computeStandings } from "./stats";
+import { bestOfFor, computeStandings } from "./stats";
 import { storage, storageIsEphemeral, storageReport } from "./storage";
 import { UploadError, deleteUpload, saveImage } from "./upload";
 import type { GameNumber, League, Player, Team } from "./types";
@@ -711,6 +711,8 @@ export async function savePlayoffsAction(_prev: ActionResult, fd: FormData): Pro
         // A series the form never showed keeps what it has, rather than being
         // blanked by a save that had no inputs for it.
         if (!fd.has(`s1_${series.id}`)) continue;
+        const bestOf = num(fd, `bo_${series.id}`);
+        if (bestOf !== null && [1, 3, 5, 7].includes(bestOf)) series.bestOf = bestOf;
         series.team1Score = num(fd, `s1_${series.id}`);
         series.team2Score = num(fd, `s2_${series.id}`);
         series.winnerId = str(fd, `w_${series.id}`) || null;
@@ -801,7 +803,7 @@ export async function savePlayoffScoresAction(
       const entered: typeof kept = [];
       for (const player of league.players) {
         if (!covered.has(player.id)) continue;
-        for (const game of [1, 2, 3] as GameNumber[]) {
+        for (let game = 1; game <= bestOfFor(series); game++) {
           const score = num(fd, `s_${player.id}_${game}`);
           const strikes = num(fd, `x_${player.id}_${game}`);
           if (score === null && strikes === null) continue;

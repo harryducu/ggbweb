@@ -56,6 +56,10 @@ export default async function PlayerProfile({ params }: { params: Promise<{ id: 
 
   const extraFields = league.settings.playerStatFields;
   const postseason = computePostseasonStats(league).find((s) => s.player.id === player.id);
+  // Columns for the longest series this bowler played in.
+  const postseasonGames = postseason
+    ? Math.max(...postseason.lines.map((l) => l.scores.length))
+    : 0;
 
   return (
     <div className="wrap">
@@ -221,10 +225,10 @@ export default async function PlayerProfile({ params }: { params: Promise<{ id: 
                     <tr>
                       <th className="left">Round</th>
                       <th className="left">Opponent</th>
-                      <th>G1</th>
-                      <th>G2</th>
-                      <th>G3</th>
-                      <th>Series</th>
+                      {Array.from({ length: postseasonGames }, (_, i) => (
+                        <th key={i}>G{i + 1}</th>
+                      ))}
+                      <th>Pins</th>
                       <th>X</th>
                     </tr>
                   </thead>
@@ -233,11 +237,14 @@ export default async function PlayerProfile({ params }: { params: Promise<{ id: 
                       <tr key={l.series.id}>
                         <td className="key left">{PLAYOFF_ROUND_LABEL[l.series.round]}</td>
                         <td className="left dim">{l.opponent?.name ?? "—"}</td>
-                        {l.scores.map((s, i) => (
-                          <td key={i} className={s === null ? "dim" : ""}>
-                            {s ?? "—"}
-                          </td>
-                        ))}
+                        {Array.from({ length: postseasonGames }, (_, i) => {
+                          const v = l.scores[i] ?? null;
+                          return (
+                            <td key={i} className={v === null ? "dim" : ""}>
+                              {v ?? "—"}
+                            </td>
+                          );
+                        })}
                         <td className="num font-semibold text-cream">{fmtInt(l.total)}</td>
                         <td className="dim">{fmtInt(l.strikes)}</td>
                       </tr>

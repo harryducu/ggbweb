@@ -112,6 +112,14 @@ export interface Week {
  * percentage. It sits with the playoffs because it is bowled after the
  * regular season, but it decides seeding rather than advancing anyone.
  */
+/** One bowler's game in a playoff series; series run up to seven games. */
+export interface PlayoffGameScore {
+  playerId: string;
+  game: number;
+  score: number | null;
+  strikes: number | null;
+}
+
 export type PlayoffRoundId = "tiebreaker" | "playin" | "semifinal" | "final";
 
 export interface PlayoffSeries {
@@ -124,16 +132,25 @@ export interface PlayoffSeries {
    */
   slot1: string;
   slot2: string;
+  /**
+   * Typed-in result. Games won for a best-of series, pins for a one-game
+   * series. When null it is worked out from the bowler scores.
+   */
   team1Score: number | null;
   team2Score: number | null;
   /** Manual winner override; otherwise derived from scores. */
   winnerId: string | null;
   /**
+   * Games in the series: first to a majority wins. Missing means the round's
+   * default — 1 for a tiebreaker, 3 for the play-in, 5 for semis and final.
+   */
+  bestOf?: number;
+  /**
    * Bowler scores for this series. Kept apart from the weeks on purpose:
    * postseason games are shown as their own stats and never move a bowler's
    * season average or totals. Missing on leagues saved before this existed.
    */
-  playerScores?: PlayerGameScore[];
+  playerScores?: PlayoffGameScore[];
 }
 
 export interface Playoffs {

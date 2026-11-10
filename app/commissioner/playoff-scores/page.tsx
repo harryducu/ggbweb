@@ -87,7 +87,8 @@ export default async function PlayoffScoresAdminPage({
                   {selected.team1!.name} v {selected.team2!.name}
                 </span>
                 <span className="text-[0.82rem] text-muted">
-                  {PLAYOFF_ROUND_LABEL[selected.series.round]} · {selected.series.label}
+                  {PLAYOFF_ROUND_LABEL[selected.series.round]} · {selected.series.label} ·{" "}
+                  {selected.bestOf === 1 ? "one game" : `best of ${selected.bestOf}`}
                 </span>
                 <span className="flex-1" />
                 <Link href="/commissioner/playoffs" className="section-link">
@@ -99,6 +100,7 @@ export default async function PlayoffScoresAdminPage({
                 key={selected.series.id}
                 seriesId={selected.series.id}
                 label={selected.series.label}
+                bestOf={selected.bestOf}
                 teams={[entryTeam(selected.team1!), entryTeam(selected.team2!)]}
                 initialScores={initialScores}
                 initialStrikes={initialStrikes}

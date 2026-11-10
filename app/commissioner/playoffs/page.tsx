@@ -26,16 +26,17 @@ export default async function PlayoffsAdminPage() {
       <div>
         <h2 className="display text-[1.6rem]">Manage Playoffs</h2>
         <p className="hint mt-1 max-w-2xl">
-          Seeds come from the standings automatically — you only enter scores. Winners advance on
-          their own, so the bracket fills in as the postseason is bowled.{" "}
+          Seeds come from the standings automatically — you only enter scores. The play-in is best
+          of 3 and the semifinals and championship are best of 5. Each game goes to the team with
+          more pins, and series winners advance on their own.{" "}
           <Link href="/playoffs" className="text-muted underline">
             See the public bracket
           </Link>
-          . Bowler scores for each series go under{" "}
+          . Bowler scores for each game go under{" "}
           <Link href="/commissioner/playoff-scores" className="text-muted underline">
             Playoff Scores
           </Link>{" "}
-          and are kept out of season stats.
+          and are kept out of season stats. Leave the boxes below blank to use them.
         </p>
       </div>
 
@@ -137,7 +138,7 @@ export default async function PlayoffsAdminPage() {
                           <div className="hint">{r.team1 ? (r.series.round === "tiebreaker" ? "Tied in the standings" : "Seeded") : "Not decided yet"}</div>
                         </div>
                         <label className="block">
-                          <span className="label">Score</span>
+                          <span className="label">{r.bestOf === 1 ? "Pins" : "Games won"}</span>
                           <input
                             type="number"
                             min={0}
@@ -153,7 +154,7 @@ export default async function PlayoffsAdminPage() {
                           <div className="hint">{r.team2 ? (r.series.round === "tiebreaker" ? "Tied in the standings" : "Seeded") : "Not decided yet"}</div>
                         </div>
                         <label className="block">
-                          <span className="label">Score</span>
+                          <span className="label">{r.bestOf === 1 ? "Pins" : "Games won"}</span>
                           <input
                             type="number"
                             min={0}
@@ -166,7 +167,16 @@ export default async function PlayoffsAdminPage() {
                         </label>
                       </div>
 
-                      <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                      <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-[8rem_minmax(0,1fr)_minmax(0,1fr)] gap-3 items-end">
+                        <label className="block">
+                          <span className="label">Format</span>
+                          <select name={`bo_${r.series.id}`} className="input" defaultValue={r.bestOf}>
+                            <option value={1}>One game</option>
+                            <option value={3}>Best of 3</option>
+                            <option value={5}>Best of 5</option>
+                            <option value={7}>Best of 7</option>
+                          </select>
+                        </label>
                         <label className="block">
                           <span className="label">Winner override</span>
                           <select
@@ -185,7 +195,9 @@ export default async function PlayoffsAdminPage() {
                         <p className="hint pb-1">
                           {r.winner
                             ? `${r.series.round === "tiebreaker" ? "Won it" : "Advancing"}: ${r.winner.name}`
-                            : "No winner yet — enter both scores or set one by hand."}
+                            : r.bestOf === 1
+                              ? "No winner yet — enter bowler scores or set one by hand."
+                              : `No winner yet — first to ${Math.floor(r.bestOf / 2) + 1} game wins. Enter bowler scores or set one by hand.`}
                         </p>
                       </div>
                     </div>

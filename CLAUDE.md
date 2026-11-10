@@ -29,6 +29,9 @@ from `main` on every push.
   Laden in one for the 6th seed (Nov 2026); it is the `tb-1` series.
 - **Playoff bowler scores live on the series (`series.playerScores`), never on a week**, so
   they show as playoff stats and never touch season averages or totals. Keep it that way.
+- **Playoff series are best-of, decided by games won.** Play-in best of 3, semis and final
+  best of 5 (`bestOfFor` in lib/stats.ts; `series.bestOf` overrides). Each game goes to the
+  team with more pins; a one-game series (the tiebreaker) shows pins instead of games won.
 - **The current week is a manual setting** (`settings.currentWeek`). Nothing reads the
   calendar; week dates are display only. Entering scores does not advance it.
 

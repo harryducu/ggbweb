@@ -23,7 +23,12 @@ export function SeriesCard({
   return (
     <div className={["panel overflow-hidden w-full", highlight ? "border-gold/55" : ""].join(" ")}>
       <div className="panel-head !py-1.5">
-        <span className="overline">{series.label}</span>
+        <span className="overline">
+          {series.label}
+          {resolved.bestOf > 1 ? (
+            <span className="text-muted-2"> · Best of {resolved.bestOf}</span>
+          ) : null}
+        </span>
         {decided ? <span className="badge badge-final">Final</span> : null}
       </div>
       <SeriesSide

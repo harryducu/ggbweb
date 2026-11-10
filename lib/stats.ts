@@ -613,29 +613,77 @@ export const PLAYOFF_ROUND_LABEL: Record<PlayoffSeries["round"], string> = {
   final: "Championship",
 };
 
-/** Sum of a team's bowlers' scores in one playoff series, all games. */
-export function seriesPlayerTotal(
+/** Games in a series; the round decides when the commissioner hasn't. */
+export function bestOfFor(series: PlayoffSeries): number {
+  if (series.bestOf && series.bestOf > 0) return series.bestOf;
+  return series.round === "tiebreaker" ? 1 : series.round === "playin" ? 3 : 5;
+}
+
+/** Wins needed to take a series: 2 of 3, 3 of 5. */
+export function winsNeeded(series: PlayoffSeries): number {
+  return Math.floor(bestOfFor(series) / 2) + 1;
+}
+
+/** A team's pins in one game of a playoff series, from its bowlers. */
+function seriesGamePins(
   league: League,
   series: PlayoffSeries,
   teamId: string | undefined,
+  game: number,
 ): number | null {
   if (!teamId) return null;
   const roster = new Set(rosterFor(league, teamId).map((p) => p.id));
   const scores = (series.playerScores ?? []).filter(
-    (s) => s.score !== null && roster.has(s.playerId),
+    (s) => s.game === game && s.score !== null && roster.has(s.playerId),
   );
   return scores.length ? scores.reduce((n, s) => n + (s.score ?? 0), 0) : null;
 }
 
-/** A typed-in series score wins; otherwise the bowlers' pins add up to it. */
+export interface SeriesGame {
+  game: number;
+  team1: number | null;
+  team2: number | null;
+  /** 1 or 2 for the side that won the game; null if unplayed or tied. */
+  winner: 1 | 2 | null;
+}
+
+/** Game-by-game team totals for a series, from the bowler scores. */
+export function seriesGames(
+  league: League,
+  series: PlayoffSeries,
+  team1: Team | undefined,
+  team2: Team | undefined,
+): SeriesGame[] {
+  return Array.from({ length: bestOfFor(series) }, (_, i) => {
+    const game = i + 1;
+    const a = seriesGamePins(league, series, team1?.id, game);
+    const b = seriesGamePins(league, series, team2?.id, game);
+    return {
+      game,
+      team1: a,
+      team2: b,
+      winner: a === null || b === null || a === b ? null : a > b ? 1 : 2,
+    };
+  });
+}
+
+/**
+ * What the bracket shows for one side: games won in a best-of series, pins in
+ * a one-game series. A typed-in score wins over the bowlers' numbers.
+ */
 function seriesScore(
   league: League,
   series: PlayoffSeries,
   side: 1 | 2,
-  team: Team | undefined,
+  team1: Team | undefined,
+  team2: Team | undefined,
 ): number | null {
   const manual = side === 1 ? series.team1Score : series.team2Score;
-  return manual ?? seriesPlayerTotal(league, series, team?.id);
+  if (manual !== null) return manual;
+  const games = seriesGames(league, series, team1, team2);
+  if (bestOfFor(series) === 1) return side === 1 ? games[0].team1 : games[0].team2;
+  if (!games.some((g) => g.winner !== null)) return null;
+  return games.filter((g) => g.winner === side).length;
 }
 
 function decide(
@@ -646,8 +694,16 @@ function decide(
   s2: number | null,
 ): string | null {
   if (series.winnerId) return series.winnerId;
-  if (s1 === null || s2 === null || s1 === s2) return null;
-  return (s1 > s2 ? t1 : t2)?.id ?? null;
+  if (s1 === null || s2 === null) return null;
+  if (bestOfFor(series) === 1) {
+    if (s1 === s2) return null;
+    return (s1 > s2 ? t1 : t2)?.id ?? null;
+  }
+  // A best-of series is only decided once someone reaches the majority.
+  const need = winsNeeded(series);
+  if (s1 >= need && s1 > s2) return t1?.id ?? null;
+  if (s2 >= need && s2 > s1) return t2?.id ?? null;
+  return null;
 }
 
 export interface TiebreakerResult {
@@ -672,8 +728,8 @@ export function tiebreakerResults(league: League): TiebreakerResult[] {
       const team2Id = direct(series.slot2);
       const t1 = team1Id ? findTeam(league, team1Id) : undefined;
       const t2 = team2Id ? findTeam(league, team2Id) : undefined;
-      const team1Score = seriesScore(league, series, 1, t1);
-      const team2Score = seriesScore(league, series, 2, t2);
+      const team1Score = seriesScore(league, series, 1, t1, t2);
+      const team2Score = seriesScore(league, series, 2, t1, t2);
       return {
         series,
         team1Id,
@@ -692,9 +748,11 @@ export interface ResolvedSeries {
   /** Text shown when a slot's team isn't known yet, e.g. "Winner of 4 vs 5". */
   team1Label: string;
   team2Label: string;
-  /** Typed-in score, or the bowlers' total when none was typed. */
+  /** Games won (best-of) or pins (one game); typed in or from the bowlers. */
   team1Score: number | null;
   team2Score: number | null;
+  bestOf: number;
+  games: SeriesGame[];
   winner: Team | undefined;
 }
 
@@ -713,8 +771,8 @@ export function resolvePlayoffs(league: League): ResolvedSeries[] {
       s,
       t1,
       t2,
-      seriesScore(league, s, 1, t1),
-      seriesScore(league, s, 2, t2),
+      seriesScore(league, s, 1, t1, t2),
+      seriesScore(league, s, 2, t1, t2),
     );
     return winnerId ? findTeam(league, winnerId) : undefined;
   };
@@ -747,8 +805,10 @@ export function resolvePlayoffs(league: League): ResolvedSeries[] {
       team2,
       team1Label: labelFor(series.slot1),
       team2Label: labelFor(series.slot2),
-      team1Score: seriesScore(league, series, 1, team1),
-      team2Score: seriesScore(league, series, 2, team2),
+      team1Score: seriesScore(league, series, 1, team1, team2),
+      team2Score: seriesScore(league, series, 2, team1, team2),
+      bestOf: bestOfFor(series),
+      games: seriesGames(league, series, team1, team2),
       winner: winnerOf(series.id),
     };
   });
@@ -791,7 +851,10 @@ export function computePostseasonStats(league: League): PostseasonStats[] {
       const lines: PostseasonLine[] = [];
       for (const r of ordered) {
         const entries = (r.series.playerScores ?? []).filter((s) => s.playerId === player.id);
-        const scores = GAMES.map((g) => entries.find((s) => s.game === g)?.score ?? null);
+        const scores = Array.from(
+          { length: r.bestOf },
+          (_, i) => entries.find((s) => s.game === i + 1)?.score ?? null,
+        );
         const bowled = scores.filter((v): v is number => v !== null);
         if (bowled.length === 0) continue;
         const strikes = entries.map((s) => s.strikes).filter((v): v is number => v !== null);
